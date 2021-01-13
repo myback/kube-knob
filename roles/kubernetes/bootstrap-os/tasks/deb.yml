@@ -1,0 +1,26 @@
+---
+- name: Install systools
+  apt:
+    pkg:
+      - ipset
+      - ipvsadm
+      - conntrack
+      - runc
+      - socat
+  tags:
+    - bootstrap
+    - join_master
+    - join_worker
+
+- name: Install haproxy
+  apt:
+    pkg:
+      - haproxy
+  when:
+    - kube_load_balancer_addr is not defined or (kube_load_balancer_addr is defined and kube_load_balancer_addr.split(":")[0] not in ["127.0.0.1", "localhost"])
+    - groups["k8s-master"] | length > 1
+    - inventory_hostname in groups["k8s-worker"]
+  tags:
+    - bootstrap
+    - join_master
+    - join_worker

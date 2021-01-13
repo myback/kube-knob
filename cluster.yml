@@ -1,0 +1,129 @@
+---
+- name: Gather facts
+  tags: always
+  import_playbook: facts.yml
+
+- hosts: k8s
+  gather_facts: false
+  any_errors_fatal: true
+  tasks:
+    - include_role:
+        name: kubernetes/bootstrap-os
+      when: not kubelet_already_running or not kube_cluster_is_initialzed
+
+- hosts: k8s-master
+  gather_facts: false
+  any_errors_fatal: true
+  tasks:
+    - include_role:
+        name: kubernetes/master
+        tasks_from: init.yml
+      when: inventory_hostname == groups["k8s-master"][0] and not kube_cluster_is_initialzed
+
+- name: Update facts
+  import_playbook: facts.yml
+  when: not kube_cluster_is_initialzed
+
+- hosts: k8s-master
+  gather_facts: false
+  any_errors_fatal: true
+  tasks:
+    - include_role:
+        name: kubernetes/network_plugins/cilium
+      when: '"network" in ansible_run_tags'
+      run_once: yes
+      tags: network
+
+    - include_role:
+        name: kubernetes/master
+        tasks_from: join.yml
+      when: not kubelet_already_running
+      tags: join_master
+
+- hosts: k8s-worker
+  gather_facts: false
+  any_errors_fatal: true
+  roles:
+    - name: kubernetes/worker
+      when: not kubelet_already_running
+      tags:
+        - join_master
+        - join_worker
+        - set_roles
+
+# - hosts: k8s-master
+#   gather_facts: false
+#   any_errors_fatal: true
+#   tasks:
+#     - block:
+#         - name: 
+#     - name: kubernetes/worker
+#       when: not kubelet_already_running
+#       tags:
+#         - join_worker
+#         - join_master
+
+#     - block:
+#       - name: Start cache http server
+#         systemd:
+#           name: '{{ cache_server_unit }}'
+#           state: started
+#         changed_when: false
+#         delegate_to: '{{ groups["cache"][0] }}'
+#         run_once: true
+#         when:
+#           - use_download_cache
+#           - 'cache_server_systemd_unit + ".service" in ansible_facts.services'
+#         tags:
+#           - join_master
+#           - join_worker
+
+#       - include_role:
+#           name: bootstrap
+#         when: not kubelet_already_running
+#         tags:
+#           - bootstrap
+#           - join_master
+#           - join_worker
+#           - cache
+#           - update_cache
+#           - update_configs
+
+#       - name: Populate service facts
+#         service_facts:
+#         when: inventory_hostname in groups["cache"]
+
+#       always:
+#       - name: Stop cache http server
+#         systemd:
+#           name: '{{ cache_server_systemd_unit }}'
+#           state: stopped
+#         changed_when: false
+#         delegate_to: '{{ groups["cache"][0] }}'
+#         run_once: true
+#         when:
+#           - use_download_cache
+#         tags:
+#           - join_master
+#           - join_worker
+
+# - hosts: k8s-master
+#   gather_facts: false
+#   any_errors_fatal: true
+#   roles:
+#     - role: kubernetes/master
+#       tags:
+#         - join_master
+#         - update_configs
+#         - network_plugin
+
+# - hosts: k8s-worker
+#   gather_facts: false
+#   any_errors_fatal: true
+#   roles:
+#     - role: kubernetes/worker
+#       tags:
+#         - join_master
+#         - join_worker
+#         - set_roles
+#         - update_configs

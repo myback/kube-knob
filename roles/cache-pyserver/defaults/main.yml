@@ -1,0 +1,14 @@
+---
+cache_tmp_dir: /tmp
+cache_server_systemd_unit: cache-pyserver
+cache_server_ip: '{{ ip | default(ansible_host) }}'
+cache_server_port: 8989
+cache_download_list: []
+cache_download_list_extend: []
+
+default_configs_dir_name: >-
+  {%- if ansible_facts.os_family == "Debian" -%}
+  default
+  {%- else -%}
+  sysconfig
+  {%- endif -%}

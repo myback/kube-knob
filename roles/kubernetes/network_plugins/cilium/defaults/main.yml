@@ -1,0 +1,90 @@
+---
+kube_config: /etc/kubernetes/admin.conf
+
+cilium_version: v1.9.1
+cilium_hubble_ui_version: v0.7.3
+cilium_hubble_ui_envoy_version: v1.14.5
+
+cilium_ui_enabled: false
+cilium_image_repository: quay.io/cilium/cilium
+cilium_image_operator_repository: quay.io/cilium/operator
+cilium_operator_replicas: 1
+
+## --enable-bpf-masquerade  | Masquerade packets from endpoints leaving the host with BPF instead of iptables
+cilium_bpf_enable_masquerade: true
+## --preallocate-bpf-maps | Enable BPF map pre-allocation
+cilium_bpf_preallocate_maps: false
+## --kube-proxy-replacement | auto-enable available features for kube-proxy replacement ("probe"),
+##   or enable only selected features (will panic if any selected feature cannot be enabled) ("partial")
+##   or enable all features (will panic if any feature cannot be enabled) ("strict"), or completely disable
+##   it (ignores any selected feature) ("disabled") (default "partial")
+cilium_kube_proxy_replacement: strict
+## --tunnel string  | Tunnel mode {vxlan, geneve, disabled} (default "vxlan" for the "veth" datapath mode)
+cilium_tunnel: vxlan
+## --bpf-lb-mode  | BPF load balancing mode ("snat", "dsr", "hybrid")
+cilium_load_balancer_mode: snat
+## --auto-direct-node-routes  | Enable automatic L2 routing between nodes
+cilium_auto_direct_node_routes: false
+## Install the CNI configuration and binary files into the filesystem
+cilium_cni_install: true
+## Skip writing of the CNI configuration. This can be used if writing of the CNI configuration is performed by external automation
+cilium_cni_custom_conf: false
+## ??? Not in cmdref: --cni-chaining-mode | Possible values: "none", "generic-veth", "aws-cni", "portmap"
+cilium_cni_chaining_mode: none
+## --enable-bandwidth-manager | Enable BPF bandwidth manager
+cilium_bandwidth_manager: true
+## --enable-host-port | Enable k8s hostPort mapping feature (requires enabling enable-node-port)
+cilium_host_port: false
+## --enable-node-port | Enable NodePort type services by Cilium
+cilium_node_port: false
+## --enable-host-reachable-services | Enable reachability of services for host applications
+cilium_host_services: false
+## --enable-external-ips  | Enable k8s service externalIPs feature (requires enabling enable-node-port)
+cilium_external_ips: false
+## --devices  | List of devices facing cluster/external network (used for BPF NodePort, BPF masquerading and host firewall)
+cilium_devices: []
+## --enable-endpoint-routes | Use per endpoint routes instead of routing via cilium_host
+cilium_enable_endpoint_routes: true
+## --enable-l7-proxy  | Enable L7 proxy for L7 policy enforcement
+cilium_enable_l7_proxy: true
+## --enable-local-redirect-policy | Enable Local Redirect Policy
+cilium_local_redirect_policy: false
+## --enable-policy  | Enable policy enforcement (default "default")
+cilium_policy_enforcement_mode: default
+## --native-routing-cidr  | Allows to explicitly specify the CIDR for native routing. This value corresponds to the configured cluster-cidr.
+cilium_native_routing_cidr: '{{ kube_network_pods_subnet | default("10.0.0.0/8") }}'
+#### Operator
+## --cluster-pool-ipv4-cidr | IPv4 CIDR Range for Pods in cluster. Requires 'ipam=cluster-pool' and 'enable-ipv4=true'
+cilium_cluster_pool_ipv4_pod_cidr: '{{ kube_network_pods_subnet | default("10.0.0.0/8") }}'
+## --cluster-pool-ipv4-mask-size | Mask size for each IPv4 podCIDR per node. Requires 'ipam=cluster-pool' and 'enable-ipv4=true' (default 24)
+cilium_cluster_pool_ipv4_mask_size: '{{ kube_network_node_prefix | default(24) }}'
+
+## cilium-agent Daemonset configuration. Possible values: "containerd", "crio", "docker", "none", "auto"
+cilium_cri_integration: none
+cilium_cri_socket: '{{ cri_socket | default("") }}'
+cilium_masquerade: true
+
+## ETCD
+cilium_cluster_domain: '{{ kube_cluster_dns_domain | default("default") }}'
+
+## ref: https://docs.cilium.io/en/stable/concepts/networking/ipam/
+## --ipam | Backend to use for IPAM (default "cluster-pool")
+cilium_ipam_mode: cluster-pool
+
+cilium_k8s_service_port: >-
+  {%- if kube_load_balancer_addr is defined -%}
+  {{ kube_load_balancer_addr.split(":")[1] }}
+  {%- else -%}
+  {{ kube_apiserver_port | default(6443) }}
+  {%- endif -%}
+
+cilium_k8s_service_host: >-
+  {%- if kube_load_balancer_addr is defined -%}
+  {{ kube_load_balancer_addr.split(":")[0] }}
+  {%- elif kube_cluster_is_initialzed | default(false) -%}
+  {{ hostvars[kube_cluster_initialzed_master[0]].host_ip }}
+  {%- else -%}
+  {%- if cilium_kube_proxy_replacement in [ 'strict', 'partial' ] -%}
+  {{ host_ip }}
+  {%- endif -%}
+  {%- endif -%}

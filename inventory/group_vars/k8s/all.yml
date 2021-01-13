@@ -1,0 +1,27 @@
+local_cache_server: 172.17.8.1:5000
+
+registry_mirrors: {"172.17.8.1:5000": ['http://{{ local_cache_server }}']}
+helm_url: 'http://{{ local_cache_server.split(":")[0] }}:8088/helm-v3.4.2-linux-amd64.tar.gz'
+cilium_image_repository: '{{ local_cache_server }}/cilium/cilium'
+cilium_image_operator_repository: '{{ local_cache_server }}/cilium/operator'
+kube_repository_image: '{{ local_cache_server }}'
+
+kube_network_plugin: cilium
+
+cache_server_systemd_unit: http-server-cache
+use_download_cache: false
+
+bin_dir: /usr/local/bin
+cni_conf_dir: /etc/cni/net.d
+
+haproxy_frontend_port: 16443
+kube_network_node_prefix: 24
+kube_apiserver_port: 6443
+kube_apiserver_endpoint: >-
+  {%- if kube_load_balancer_addr is defined -%}
+  {{ kube_load_balancer_addr }}
+  {%- elif kube_cluster_is_initialzed -%}
+  {{ hostvars[kube_cluster_initialzed_master[0]].host_ip }}:{{ kube_apiserver_port }}
+  {%- else -%}
+  {{ host_ip }}:{{ kube_apiserver_port }}
+  {%- endif -%}

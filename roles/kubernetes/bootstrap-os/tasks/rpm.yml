@@ -1,0 +1,40 @@
+---
+- name: Put SELinux in permissive mode
+  selinux:
+    policy: targeted
+    state: permissive
+
+- name: Install systools
+  yum:
+    name: '{{ packages }}'
+  vars:
+    packages:
+      - ipset
+      - ipvsadm
+      - conntrack
+      - runc
+      - socat
+      - python3-pyyaml
+      - tc
+  tags:
+    - bootstrap
+    - join_master
+    - join_worker
+
+- name: Start systemd-resolved
+  systemd:
+    name: systemd-resolved
+    enabled: yes
+    state: started
+
+- name: Install haproxy
+  yum:
+    name: haproxy
+  when:
+    - kube_load_balancer_addr is not defined or (kube_load_balancer_addr is defined and kube_load_balancer_addr.split(":")[0] not in ["127.0.0.1", "localhost"])
+    - groups["k8s-master"] | length > 1
+    - inventory_hostname in groups["k8s-worker"]
+  tags:
+    - bootstrap
+    - join_master
+    - join_worker

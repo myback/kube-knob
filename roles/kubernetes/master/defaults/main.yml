@@ -1,0 +1,64 @@
+---
+kube_config: /etc/kubernetes/admin.conf
+# kube_load_balancer_addr: 10.10.10.10:6443
+
+kube_version: v1.20.1
+kube_apiserver_port: 6443
+kube_apiserver_anonymous_auth_disable: false
+
+# kube_apiserver_endpoint: >-
+#   {%- if kube_load_balancer_addr is defined -%}
+#   {{ kube_load_balancer_addr }}
+#   {%- elif kube_cluster_is_initialzed -%}
+#   {{ hostvars[kube_cluster_initialzed_master[0]].host_ip }}:{{ kube_apiserver_port }}
+#   {%- else -%}
+#   {{ host_ip }}:{{ kube_apiserver_port }}
+#   {%- endif -%}
+
+# kube_apiserver_logs_path: /var/log/kube/apiserver
+# kube_apiserver_audit:
+#   policy_file: '{{ kube_admission_configs }}/audit-policy.yaml'
+#   log_maxage: 30
+#   log_maxbackup: 3
+#   log_maxsize: 100
+#   log_path: '{{ kube_apiserver_logs_path }}/audit.log'
+#   webhook:
+#     config_file: '{{ kube_admission_configs }}/webhook-config.yaml'
+#     mode: ""
+#     batch_max_size: ""
+#     batch_max_wait: ""
+kube_admission_configs_path: /etc/kubernetes/admission-configs
+kube_admission_plugins: []
+
+kube_rewrite_nodename: false
+
+kube_network_plugin: cilium
+kube_network_service_subnet: 10.233.0.0/18
+kube_network_pods_subnet: 10.233.64.0/18
+kube_network_node_prefix: 24
+
+kube_cluster_name: k8s
+kube_cluster_dns_domain: cluster.local
+kube_cluster_dns_ip: '{{ kube_network_service_subnet | ipaddr("net") | ipaddr(10) | ipaddr("address") }}'
+
+kube_profiling: false
+kube_tls_cipher_suites:
+  - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+  - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+  - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+  - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+  - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+  - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+  - TLS_RSA_WITH_AES_128_GCM_SHA256
+  - TLS_RSA_WITH_AES_256_GCM_SHA384
+
+kube_controller_manager_bind_address: 127.0.0.1
+kube_scheduler_bind_address: 127.0.0.1
+
+kube_repository_image: k8s.gcr.io
+
+kubeadm_certificate_key: '{{ lookup("password", "./.artefacts/kubeadm_certificate_key.creds length=64 chars=hexdigits") | lower }}'
+kubeadm_config_file_path: /root/kubeadmconfig.yaml
+kubeadm_init_phases_skip: [ "addon/kube-proxy" ]
+
+cri_socket: /run/containerd/containerd.sock

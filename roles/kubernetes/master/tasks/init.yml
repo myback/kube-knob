@@ -1,0 +1,60 @@
+---
+- name: Generate kubeadm_token
+  set_fact:
+    kubeadm_token: '{{ lookup("password", "/dev/null chars=ascii_lowercase,digits length=6") }}.{{ lookup("password", "/dev/null chars=ascii_lowercase,digits length=16") }}'
+
+- name: Render init kubeconfig
+  template:
+    src: kubeadm-config-init.yaml.j2
+    dest: '{{ kubeadm_config_file_path }}'
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Init Kubernetes cluster {% if kubeadm_init_phases_skip %}with skip phases {{ kubeadm_init_phases_skip | join(",") }}{% endif %}
+  kubeadm:
+    init:
+      skip_phases: '{{ kubeadm_init_phases_skip }}'
+      upload_certs: yes
+      kubeadm_config: '{{ kubeadm_config_file_path }}'
+  environment:
+    PATH: '{{ bin_dir }}:{{ ansible_env.PATH }}'
+  register: kubeadm_init
+  failed_when: kubeadm_init.rc != 0 and "field is immutable" not in kubeadm_init.stderr
+
+# - include_tasks: patch.yaml
+#   when: kube_apiserver_anonymous_auth_disable
+
+# - name: Pause for 5 seconds to restart kube-apiserver
+#   wait_for:
+#     timeout: 5
+#   when: kube_apiserver_anonymous_auth_disable
+
+- name: Wait for kube-apiserver
+  uri:
+    url: 'https://{{ kube_apiserver_endpoint }}/livez'
+    validate_certs: no
+  register: result
+  until: result.status == 200
+  retries: 60
+  delay: 5
+  # when: not kube_apiserver_anonymous_auth_disable
+
+# - name: Wait from kube-apiserver 200 status
+#   uri:
+#     url: 'https://{{ kube_apiserver_endpoint }}/livez'
+#     validate_certs: no
+#     headers:
+#       Authorization: 'Bearer {{ sa_token }}'
+#   register: result
+#   until: result.status == 200
+#   retries: 60
+#   delay: 5
+#   when: kube_apiserver_anonymous_auth_disable
+
+- name: Update kubeconfig for root user
+  include_tasks: kubeconfig.yml
+
+- include_role:
+    name: kubernetes/network_plugins/cilium
+  when: kube_network_plugin == 'cilium'

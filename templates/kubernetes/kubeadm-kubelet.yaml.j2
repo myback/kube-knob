@@ -1,0 +1,30 @@
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+nodeStatusUpdateFrequency: 10s
+failSwapOn: true
+cgroupDriver: cgroupfs
+maxPods: {{ kube_node_max_pods | default(110) }}
+address: {{ ip | default('0.0.0.0') }}
+kubeletCgroups: /systemd/system.slice
+clusterDomain: {{ kube_cluster_dns_domain }}
+clusterDNS:
+- {{ kube_cluster_dns_ip }}
+{% if system_reserved is defined %}
+systemReserved:
+{% if inventory_hostname in groups["k8s-master"] %}
+  cpu: {{ system_reserved.master_cpu_reserved | default("250m") }}
+  memory: {{ system_reserved.master_memory_reserved | default("256Mi") }}
+{% elif inventory_hostname in groups["k8s-worker"] %}
+  cpu: {{ system_reserved.node_cpu_reserved | default("500m") }}
+  memory: {{ system_reserved.node_memory_reserved | default("512Mi") }}
+{% endif %}
+{% endif %}
+tlsMinVersion: VersionTLS13
+tlsCipherSuites:
+{% for tls in kube_tls_cipher_suites %}
+- {{ tls }}
+{% endfor %}
+eventRecordQPS: 5
+readOnlyPort: 0
+reservedSystemCPUs: "0"

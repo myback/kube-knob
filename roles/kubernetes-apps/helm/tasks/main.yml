@@ -1,0 +1,19 @@
+---
+- name: Check if helm has already exists
+  stat:
+    path: '{{ bin_dir }}/helm'
+  register: helm_exists
+
+- name: Download helm
+  unarchive:
+    src: '{{ helm_url }}'
+    dest: '{{ bin_dir }}'
+    owner: root
+    group: root
+    mode: 0755
+    extra_opts:
+      - --strip=1
+      - --wildcards
+      - '*/helm'
+    remote_src: yes
+  when: not helm_exists.stat.exists

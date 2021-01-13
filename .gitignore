@@ -1,0 +1,6 @@
+.venv
+.vagrant
+.docker
+.artefacts
+inventory/vagrant.ini
+*.log

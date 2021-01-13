@@ -1,0 +1,15 @@
+livenessProbe:
+  httpGet:
+    httpHeaders:
+      - name: Authorization
+        value: Bearer {{ sa_token }}
+readinessProbe:
+  httpGet:
+    httpHeaders:
+      - name: Authorization
+        value: Bearer {{ sa_token }}
+startupProbe:
+  httpGet:
+    httpHeaders:
+      - name: Authorization
+        value: Bearer {{ sa_token }}

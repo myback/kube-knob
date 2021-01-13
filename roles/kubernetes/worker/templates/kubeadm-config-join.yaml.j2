@@ -1,0 +1,17 @@
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: JoinConfiguration
+discovery:
+  bootstrapToken:
+{% if groups["k8s-master"] | length > 1 %}
+    apiServerEndpoint: {{ kube_load_balancer_addr | default('127.0.0.1:' + haproxy_frontend_port | string) }}
+{% else %}
+    apiServerEndpoint: {{ kube_load_balancer_addr | default(hostvars[kube_cluster_initialzed_master[0]].host_ip + ":" + kube_apiserver_port | string) }}
+{% endif %}
+    token: {{ kubeadm_token }}
+    unsafeSkipCAVerification: true
+nodeRegistration:
+{% if kube_rewrite_nodename %}
+  name: {{ inventory_hostname }}
+{% endif %}
+  criSocket: unix://{{ cri_socket }}
+{% include 'kubernetes/kubeadm-kubelet.yaml.j2' %}

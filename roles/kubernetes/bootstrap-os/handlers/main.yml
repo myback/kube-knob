@@ -1,0 +1,21 @@
+---
+- name: Restart kubelet
+  systemd:
+    name: kubelet
+    enabled: yes
+    daemon_reload: yes
+    state: restarted
+
+- name: Restart containerd
+  systemd:
+    name: containerd
+    enabled: yes
+    daemon_reload: yes
+    state: restarted
+
+- name: Reload haproxy
+  systemd:
+    name: haproxy
+    enabled: yes
+    daemon_reload: yes
+    state: reloaded
