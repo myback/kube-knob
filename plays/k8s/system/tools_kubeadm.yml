@@ -1,0 +1,16 @@
+#!/usr/bin/env -S ansible-playbook
+- hosts: k8s
+  gather_facts: no
+  tasks:
+    - name: Download kubeadm
+      get_url:
+        url: '{{ kubeadm_download_url }}'
+        dest: '{{ bin_dir }}/kubeadm'
+        owner: root
+        group: root
+        mode: 0755
+        checksum: '{{ kubeadm_download_checksum }}'
+      register: result
+      until: result is succeeded
+      retries: 3
+      delay: 5

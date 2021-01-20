@@ -1,0 +1,23 @@
+---
+crictl_download_url: 'https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ crictl_version }}/crictl-{{ crictl_version }}-linux-amd64.tar.gz'
+storage_url: 'https://storage.googleapis.com/kubernetes-release/release/{{ kube_version }}/bin/linux/amd64'
+
+kubeadm_checksums:
+  v1.19.7: sha1:402c379a9ae717d0a7f3c753724f917cf011b572
+  v1.20.2: sha1:4c025ebf29eb7aa32012a1c8f81e7b85df2bf92f
+
+kubectl_checksums: 
+  v1.19.7: sha1:df76457dbec6f6117dc6c7853cb38284872aa6ae
+  v1.20.2: sha1:202e00c35fa2a4085135061e5d0965ebbffed19c
+
+kubelet_checksums:
+  v1.19.7: sha1:1c52efae3c30d2a180c6f0dc0cf234dbdebf9472
+  v1.20.2: sha1:25ca655cce261cdbeb7c3337185f669ee0b53cc3
+
+kubeadm_download_url: '{{ storage_url }}/{{ kube_version }}/kubeadm'
+kubectl_download_url: '{{ storage_url }}/{{ kube_version }}/kubectl'
+kubelet_download_url: '{{ storage_url }}/{{ kube_version }}/kubelet'
+
+kubeadm_download_checksum: '{{ kubeadm_checksums[kube_version] }}'
+kubectl_download_checksum: '{{ kubectl_checksums[kube_version] }}'
+kubelet_download_checksum: '{{ kubelet_checksums[kube_version] }}'

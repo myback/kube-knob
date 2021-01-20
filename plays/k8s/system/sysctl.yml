@@ -1,0 +1,18 @@
+#!/usr/bin/env -S ansible-playbook
+- hosts: k8s
+  gather_facts: no
+  tasks:
+    - name: Set fact
+      set_fact:
+        sysctl_params:
+          'net.ipv4.ip_forward': "1"
+          'net.bridge.bridge-nf-call-iptables': "1"
+    - name: Change sysctl params
+      sysctl:
+        name: '{{ item.key }}'
+        value: '{{ item.value }}'
+        sysctl_set: yes
+        state: present
+        reload: yes
+        sysctl_file: /etc/sysctl.d/99-sysctl.conf
+      with_dict: '{{ sysctl_params }}'

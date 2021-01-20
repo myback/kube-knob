@@ -1,0 +1,122 @@
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: {{ ansible_host }}
+  bindPort: {{ kube_apiserver_port }}
+nodeRegistration:
+{% if kube_rewrite_nodename %}
+  name: {{ inventory_hostname }}
+{% endif %}
+  criSocket: unix://{{ cri_socket }}
+{% if groups["k8s-worker"] | length == 0 %}
+  taints: []
+{% else %}
+  taints:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/master
+{% endif %}
+certificateKey: {{ kubeadm_certificate_key }}
+bootstrapTokens:
+  - token: {{ kubeadm_token }}
+    ttl: 20m
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+clusterName: {{ kube_cluster_name }}
+networking:
+  dnsDomain: {{ kube_cluster_dns_domain }}
+  serviceSubnet: {{ kube_network_service_subnet }}
+  podSubnet: {{ kube_network_pods_subnet }}
+kubernetesVersion: {{ kube_version }}
+controlPlaneEndpoint: {{ kube_control_plain_endpoint }}
+{% if kube_image_repository is defined %}
+imageRepository: {{ kube_image_repository }}
+{% endif %}
+useHyperKubeImage: false
+etcd:
+  local:
+    serverCertSANs:
+{% for host in groups["k8s-master"] %}
+      - {{ hostvars[host].ansible_host }}
+{% endfor %}
+    peerCertSANs:
+{% for host in groups["k8s-master"] %}
+      - {{ hostvars[host].ansible_host }}
+{% endfor %}
+apiServer:
+  extraArgs:
+    allow-privileged: "true"
+    # anonymous-auth: "{{ (not kube_apiserver_anonymous_auth_disable) | string | lower }}"
+    apiserver-count: "3"
+    {% if kube_apiserver_audit is defined -%}
+    audit-log-maxage: "{{ kube_apiserver_audit.log_maxage | default(30) }}"
+    audit-log-maxbackup: "{{ kube_apiserver_audit.log_maxbackup | default(3) }}"
+    audit-log-maxsize: "{{ kube_apiserver_audit.log_maxsize | default(100) }}"
+    audit-policy-file: {{ kube_apiserver_audit.policy_file | default("{{ kube_admission_configs_path }}/audit-policy.yaml") }}
+    {% if kube_apiserver_audit.webhook is defined -%}
+    audit-webhook-config-file: {{ kube_apiserver_audit.webhook.config_file }}
+    audit-webhook-mode: {{ kube_apiserver_audit.webhook.mode | default("batch") }}
+    audit-webhook-batch-max-size: "{{ kube_apiserver_audit.webhook.batch_max_size | default(100) }}"
+    audit-webhook-batch-max-wait: "{{ kube_apiserver_audit.webhook.batch_max_wait | default("1s") }}"
+    {% else %}
+    audit-log-path: {{ kube_apiserver_audit.log_path | default("{{ kube_apiserver_logs_path }}/audit.log") }}
+    {% endif -%}
+    {% endif -%}
+    {% if kube_admission_plugins -%}
+    enable-admission-plugins: {{ kube_admission_plugins | join(",") }}
+    {% endif -%}
+    authorization-mode: Node,RBAC
+    {% if kube_encryption_provider_keys is defined and kube_encryption_provider_keys | length > 0 -%}
+    encryption-provider-config: {{ kube_admission_configs_path }}/encryption-provider.yaml
+    {% endif -%}
+    endpoint-reconciler-type: lease
+    kubelet-preferred-address-types: InternalDNS,InternalIP,Hostname,ExternalDNS,ExternalIP
+    profiling: "{{ kube_profiling | string | lower }}"
+    request-timeout: 300s
+    service-account-lookup: "true"
+    service-node-port-range: 30000-32767
+    storage-backend: etcd3
+    tls-cipher-suites: {{ kube_tls_cipher_suites | join(',')}}
+    tls-min-version: {{ kube_tls_min_version | default("VersionTLS12") }}
+  extraVolumes:
+    - name: usr-share-ca-certificates
+      hostPath: /usr/share/ca-certificates
+      mountPath: /usr/share/ca-certificates
+      readOnly: true
+    - name: apiserver-configs
+      hostPath: {{ kube_admission_configs_path }}
+      mountPath: {{ kube_admission_configs_path }}
+      readOnly: true
+{% if kube_apiserver_audit is defined and kube_apiserver_audit.webhook is not defined %}
+    - name: apiserver-logs
+      hostPath: {{ kube_apiserver_logs_path }}
+      mountPath: {{ kube_apiserver_logs_path }}
+      readOnly: false
+{% endif %}
+  certSANs:
+    - localhost
+    - 127.0.0.1
+{% for host in groups["k8s-master"] %}
+    - {{ hostvars[host].ansible_host }}
+{% endfor %}
+{% if kube_load_balancer_addr is defined %}
+    - {{ kube_load_balancer_addr.split(':')[0] }}
+{% endif %}
+  timeoutForControlPlane: 5m0s
+scheduler:
+  extraArgs:
+    bind-address: {{ kube_controller_manager_bind_address }}
+    profiling: "{{ kube_profiling | string | lower }}"
+controllerManager:
+  extraArgs:
+    bind-address: {{ kube_scheduler_bind_address }}
+    feature-gates: RotateKubeletServerCertificate=true
+    node-cidr-mask-size: "{{ kube_network_node_prefix }}"
+    node-monitor-grace-period: 40s
+    node-monitor-period: 5s
+    pod-eviction-timeout: 5m0s
+    profiling: "{{ kube_profiling | string | lower }}"
+    service-cluster-ip-range: {{ kube_network_service_subnet }}
+    terminated-pod-gc-threshold: "10"
+    use-service-account-credentials: "true"
+{% include 'kubeadm-config-kubelet.yaml.j2' %}

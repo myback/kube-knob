@@ -1,0 +1,18 @@
+- hosts: k8s
+  tags: always
+  tasks:
+    - name: Facts
+      block:
+        - name: Populate service facts
+          service_facts:
+
+        - name: Check if kubelet has already configured
+          stat:
+            path: "/var/lib/kubelet/config.yaml"
+          register: kubelet_is_configured
+
+        - name: Set facts
+          set_fact:
+            kubeadm_certificate_key: '{{ lookup("password", "{{ inventory_dir }}/artifacts/kubeadm_certificate_key.creds length=64 chars=hexdigits") | lower }}'
+            kubelet_already_running: '{{ kubelet_is_configured.stat.exists and services.get("kubelet.service").state == "running" }}'
+      when: kubeadm_certificate_key is not defined or "services" not in hostvars or kubelet_already_running is not defined

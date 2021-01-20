@@ -1,0 +1,27 @@
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: JoinConfiguration
+discovery:
+  bootstrapToken:
+    apiServerEndpoint: {{ kube_control_plain_endpoint }}
+    token: {{ hostvars[groups["k8s-master"][0]].kubeadm_token | default(kubeadm_token) }}
+    unsafeSkipCAVerification: true
+nodeRegistration:
+{% if kube_rewrite_nodename %}
+  name: {{ inventory_hostname }}
+{% endif %}
+  criSocket: unix://{{ cri_socket }}
+{% if inventory_hostname in groups["k8s-master"] %}
+{% if groups["k8s-worker"] | length == 0 %}
+  taints: []
+{% else %}
+  taints:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/master
+{% endif %}
+controlPlane:
+  localAPIEndpoint:
+    advertiseAddress: {{ ansible_host }}
+    bindPort: {{ kube_apiserver_port }}
+  certificateKey: {{ kubeadm_certificate_key }}
+{% endif %}

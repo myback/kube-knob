@@ -1,6 +1,9 @@
-.venv
-.vagrant
-.docker
-.artefacts
-inventory/vagrant.ini
+.DS_Store
+
+.*/
+env/test/
+collections/
+
+Vagrantfile
 *.log
+docker-compose.yaml

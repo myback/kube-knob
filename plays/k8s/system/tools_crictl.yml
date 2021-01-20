@@ -1,0 +1,20 @@
+#!/usr/bin/env -S ansible-playbook
+- hosts: k8s
+  gather_facts: no
+  tasks:
+    - name: Download crictl
+      unarchive:
+        src: '{{ crictl_download_url }}'
+        dest: '{{ bin_dir }}'
+        owner: root
+        group: root
+        mode: 0755
+        remote_src: yes
+
+    - name: Render config file /etc/crictl.yaml
+      template:
+        src: crictl.yaml.j2
+        dest: /etc/crictl.yaml
+        owner: root
+        group: root
+        mode: 0644

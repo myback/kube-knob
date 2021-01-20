@@ -1,0 +1,21 @@
+#!/usr/bin/env -S ansible-playbook
+- hosts: k8s
+  gather_facts: no
+  handlers:
+    - name: Swapoff
+      command: swapoff -a
+  tasks:
+    - name: Disable swap in fstab
+      replace:
+        path: /etc/fstab
+        regexp: '^([^#].*?[\s\t]swap\s+.*)$'
+        replace: '# \1'
+      notify: Swapoff
+
+    - name: Ensure BPF is mounted
+      mount:
+        fstype: bpf
+        path: /sys/fs/bpf
+        src: bpffs
+        state: mounted
+      when: kube_network_plugin == 'cilium'

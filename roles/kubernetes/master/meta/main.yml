@@ -1,4 +1,0 @@
----
-# dependencies:
-#   - role: kubernetes/bootstrap-os
-#     when: not kubelet_already_running

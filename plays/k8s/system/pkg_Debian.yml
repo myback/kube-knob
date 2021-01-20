@@ -1,0 +1,9 @@
+#!/usr/bin/env -S ansible-playbook
+- hosts: k8s
+  gather_facts: no
+  tasks:
+    - name: Install packages
+      apt:
+        pkg:
+          - conntrack
+          - socat
