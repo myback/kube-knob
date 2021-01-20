@@ -1,0 +1,28 @@
+---
+kube_network_plugin: cilium
+kube_network_service_subnet: 10.233.0.0/18
+kube_network_pods_subnet: 10.233.64.0/18
+kube_network_node_prefix: 24
+
+kube_cluster_name: default
+kube_cluster_dns_domain: cluster.local
+kube_cluster_dns_ip: '{{ kube_network_service_subnet | ipaddr("net") | ipaddr(10) | ipaddr("address") }}'
+
+kubeconfig_file_path_local: '$HOME/.kube/config'
+kubeconfig_path: /etc/kubernetes/admin.conf
+
+kubelet_reserved_system_cpus: 0
+
+# kube_load_balancer_addr: 10.20.30.40:6443
+kube_apiserver_port: 6443
+kube_control_plain_endpoint: >-
+  {%- if kube_load_balancer_addr is defined -%}
+  {{ kube_load_balancer_addr }}
+  {%- else -%}
+  {{ hostvars[groups["k8s-master"][0]].ansible_host }}:{{ kube_apiserver_port }}
+  {%- endif -%}
+
+bin_dir: /usr/local/bin
+cni_bin_dir: /usr/lib/cni
+cni_conf_dir: /etc/cni/net.d
+temp_dir: /var/cache/kubernetes

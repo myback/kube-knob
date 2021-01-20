@@ -1,0 +1,25 @@
+---
+# kube_image_repository: k8s.gcr.io
+
+# kube_apiserver_logs_path: /var/log/kube/apiserver
+# kube_apiserver_audit:
+#   policy_file: '{{ kube_admission_configs }}/audit-policy.yaml'
+#   log_maxage: 30
+#   log_maxbackup: 3
+#   log_maxsize: 100
+#   log_path: '{{ kube_apiserver_logs_path }}/audit.log'
+#   webhook:
+#     config_file: '{{ kube_admission_configs }}/webhook-config.yaml'
+#     mode: ""
+#     batch_max_size: ""
+#     batch_max_wait: ""
+kube_admission_configs_path: /etc/kubernetes/admission-configs
+kube_admission_plugins: []
+
+kube_controller_manager_bind_address: 127.0.0.1
+kube_scheduler_bind_address: 127.0.0.1
+
+kubeadm_init_phases_skip: [ "addon/kube-proxy" ]
+
+kubelet_cpu_reserved: "500m"
+kubelet_memory_reserved: "512Mi"

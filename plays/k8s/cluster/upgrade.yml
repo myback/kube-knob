@@ -1,0 +1,152 @@
+#!/usr/bin/env -S ansible-playbook
+- import_playbook: '{{ playbook_dir }}/../system/ansible_python_interpreter.yml'
+
+- hosts: k8s
+  gather_facts: no
+  tasks:
+    - name: Get kubelet version
+      command: >- 
+        kubelet --version
+      register: kublet_version_resp
+
+    - name: Set fact
+      set_fact:
+        need_upgrade: '{{ kube_version not in kublet_version_resp.stdout }}'
+
+- hosts: k8s-master[0]
+  serial: 1
+  any_errors_fatal: yes
+  tasks:
+    - name: Upgrade node
+      block:
+        - name: Download kubeadm
+          get_url:
+            url: '{{ kubeadm_download_url }}'
+            dest: '{{ bin_dir }}/kubeadm'
+            owner: root
+            group: root
+            mode: 0755
+            checksum: '{{ kubeadm_download_checksum }}'
+          register: result
+          until: result is succeeded
+          retries: 3
+          delay: 5
+
+        - name: Download kubectl
+          get_url:
+            url: '{{ kubectl_download_url }}'
+            dest: '{{ bin_dir }}/kubectl'
+            owner: root
+            group: root
+            mode: 0755
+            checksum: '{{ kubectl_download_checksum }}'
+          register: result
+          until: result is succeeded
+          retries: 3
+          delay: 5
+
+        - name: Drain node
+          command: >-
+            kubectl
+            --kubeconfig={{ inventory_dir }}/artifacts/kubeconfig
+            drain
+            {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
+            --delete-local-data
+            --ignore-daemonsets
+          delegate_to: localhost
+
+        - name: Upgrade node
+          command: >-
+            kubeadm upgrade apply {{ kube_version }} -y
+
+        - name: Download kubelet
+          get_url:
+            url: '{{ kubelet_download_url }}'
+            dest: '{{ bin_dir }}/kubelet'
+            owner: root
+            group: root
+            mode: 0755
+            checksum: '{{ kubelet_download_checksum }}'
+          register: result
+          until: result is succeeded
+          retries: 3
+          delay: 5
+
+        - name: Restart kubelet
+          systemd:
+            name: kubelet
+            enabled: yes
+            daemon_reload: yes
+            state: restarted
+
+        - name: Uncordon node
+          command: >-
+            kubectl
+            --kubeconfig={{ inventory_dir }}/artifacts/kubeconfig
+            uncordon
+            {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
+          delegate_to: localhost
+      when: need_upgrade
+
+- hosts: k8s:!k8s-master[0]
+  serial: 1
+  any_errors_fatal: yes
+  tasks:
+    - name: Upgrade node
+      block:
+        - name: Download kubeadm
+          get_url:
+            url: '{{ kubeadm_download_url }}'
+            dest: '{{ bin_dir }}/kubeadm'
+            owner: root
+            group: root
+            mode: 0755
+            checksum: '{{ kubeadm_download_checksum }}'
+          register: result
+          until: result is succeeded
+          retries: 3
+          delay: 5
+
+        - name: Drain node
+          command: >-
+            kubectl
+            --kubeconfig={{ inventory_dir }}/artifacts/kubeconfig
+            drain
+            {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
+            --delete-local-data
+            --ignore-daemonsets
+          delegate_to: localhost
+
+        - name: Upgrade node
+          command: kubeadm upgrade node
+
+        - name: Download kubelet
+          get_url:
+            url: '{{ kubelet_download_url }}'
+            dest: '{{ bin_dir }}/kubelet'
+            owner: root
+            group: root
+            mode: 0755
+            checksum: '{{ kubelet_download_checksum }}'
+          register: result
+          until: result is succeeded
+          retries: 3
+          delay: 5
+
+        - name: Restart kubelet
+          systemd:
+            name: kubelet
+            enabled: yes
+            daemon_reload: yes
+            state: restarted
+
+        - name: Uncordon node
+          command: >-
+            kubectl
+            --kubeconfig={{ inventory_dir }}/artifacts/kubeconfig
+            uncordon
+            {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
+          delegate_to: localhost
+      when: need_upgrade
+# - import_playbook: '{{ playbook_dir }}/../system/setup.yml'
+

@@ -1,0 +1,49 @@
+#!/usr/bin/env -S ansible-playbook
+- hosts: k8s
+  gather_facts: no
+  handlers:
+    - name: Restart kubelet
+      systemd:
+        name: kubelet
+        enabled: yes
+        daemon_reload: yes
+        state: restarted
+  tasks:
+    - name: Set fact
+      set_fact:
+        default_configs_dir_name: >-
+          {%- if ansible_os_family == "Debian" -%}
+          default
+          {%- else -%}
+          sysconfig
+          {%- endif -%}
+
+    - name: Download kubelet
+      get_url:
+        url: '{{ kubelet_download_url }}'
+        dest: '{{ bin_dir }}/kubelet'
+        owner: root
+        group: root
+        mode: 0755
+        checksum: '{{ kubelet_download_checksum }}'
+      register: result
+      until: result is succeeded
+      retries: 3
+      delay: 5
+
+    - name: Render /etc/{{ default_configs_dir_name }}/kubelet file
+      template:
+        src: kubelet.env.j2
+        dest: '/etc/{{ default_configs_dir_name }}/kubelet.env'
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Render kubelet systemd unit
+      template:
+        src: kubelet.service.j2
+        dest: /etc/systemd/system/kubelet.service
+        owner: root
+        group: root
+        mode: 0640
+      notify: Restart kubelet

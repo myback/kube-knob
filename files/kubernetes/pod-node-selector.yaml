@@ -1,4 +1,0 @@
-# podNodeSelectorPluginConfig:
-#   clusterDefaultNodeSelector: name-of-node-selector
-#   namespace1: name-of-node-selector
-#   namespace2: name-of-node-selector

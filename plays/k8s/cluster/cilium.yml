@@ -1,0 +1,7 @@
+#!/usr/bin/env -S ansible-playbook
+- import_playbook: '{{ playbook_dir }}/../system/ansible_python_interpreter.yml'
+
+- hosts: localhost
+  gather_facts: no
+  roles:
+    - name: cilium

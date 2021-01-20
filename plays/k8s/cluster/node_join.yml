@@ -1,0 +1,48 @@
+#!/usr/bin/env -S ansible-playbook
+- import_playbook: facts.yml
+
+- hosts: k8s
+  tasks:
+    - name: Token creation
+      block:
+        - name: Generate kubeadm token
+          set_fact:
+            kubeadm_token_temp: '{{ lookup("password", "/dev/null chars=ascii_lowercase,digits length=6") }}.{{ lookup("password", "/dev/null chars=ascii_lowercase,digits length=16") }}'
+
+        - name: Init phase upload-certs
+          command: >-
+            kubeadm init phase upload-certs
+            --certificate-key={{ kubeadm_certificate_key }}
+            --upload-certs
+
+        - name: Create token for join node with 10m expiration
+          command: >-
+            kubeadm token create {{ kubeadm_token_temp }}
+            --ttl=10m
+            --certificate-key={{ kubeadm_certificate_key }}
+            --print-join-command
+
+        - name: Set kubeadm token
+          set_fact:
+            kubeadm_token: '{{ kubeadm_token_temp }}'
+      run_once: true
+      delegate_to: '{{ groups["k8s-master"][0] }}'
+      when: kubeadm_token is not defined
+
+    - name: Join to cluster
+      block:
+        - name: Render join kubeconfig
+          template:
+            src: kubeadm-config-join.yaml.j2
+            dest: '{{ kubeadm_config_path }}'
+            owner: root
+            group: root
+            mode: 0600
+
+        - name: Join node to cluster
+          command: >-
+            kubeadm join --config={{ kubeadm_config_path }}
+      when: not kubelet_already_running
+
+- import_playbook: labels.yml
+- import_playbook: api_lb.yml

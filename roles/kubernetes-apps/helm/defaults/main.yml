@@ -1,4 +1,0 @@
----
-bin_dir: /usr/local/bin
-helm_version: v3.4.2
-helm_url: 'https://get.helm.sh/helm-{{ helm_version }}-linux-amd64.tar.gz'

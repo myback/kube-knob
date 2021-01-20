@@ -1,0 +1,26 @@
+#!/usr/bin/env -S ansible-playbook
+- hosts: k8s
+  gather_facts: no
+  tasks:
+    - name: Set fact
+      set_fact:
+        kernel_modules:
+          - br_netfilter
+          - ip_vs
+          - ip_vs_rr
+          - ip_vs_wrr
+          - ip_vs_sh
+
+    - name: Load kernel module
+      modprobe:
+        name: '{{ item }}'
+        state: present
+      with_items: '{{ kernel_modules }}'
+
+    - name: Write modules config
+      template:
+        src: modules.conf.j2
+        dest: /etc/modules-load.d/kubernetes.conf
+        owner: root
+        group: root
+        mode: 0644

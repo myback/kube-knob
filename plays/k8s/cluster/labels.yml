@@ -1,0 +1,41 @@
+#!/usr/bin/env -S ansible-playbook
+- import_playbook: '{{ playbook_dir }}/../system/ansible_python_interpreter.yml'
+
+- hosts: k8s-worker
+  gather_facts: no
+  tasks:
+    - name: Prepare roles
+      set_fact:
+        kube_labels_overwrite: no
+        node_roles: >-
+          [{%- if roles is defined -%}
+          {% for role in roles.split(',') %}
+          'node-role.kubernetes.io/{{ role }}=',
+          {% endfor %}
+          {%- else -%}
+          'node-role.kubernetes.io/worker=',
+          {%- endif -%}]
+
+    - name: Prepare labels
+      set_fact:
+        node_labels: >-
+          {%- if labels is defined -%}
+          {{ labels.split(",") }}
+          {%- endif -%}
+      tags: roles
+
+    - name: Set labels on worker node
+      command: >-
+        kubectl
+        --kubeconfig={{ inventory_dir }}/artifacts/kubeconfig
+        label node
+        {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
+        {{ node_roles | join(" ") }}
+        {{ node_labels | join(" ") }}
+        {% if kube_labels_overwrite %}--overwrite{% endif %}
+      register: kubectl_resp
+      failed_when: kubectl_resp.rc != 0 and "already has a value" not in kubectl_resp.stderr
+      changed_when: kubectl_resp.rc == 0
+      delegate_to: localhost
+      tags: roles
+      when: node_labels or node_roles

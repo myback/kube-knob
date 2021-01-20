@@ -1,0 +1,18 @@
+#!/usr/bin/env -S ansible-playbook
+- hosts: k8s
+  gather_facts: no
+  tasks:
+    - name: Gather facts
+      tags: always
+      setup:
+
+- import_playbook: kernel.yml
+- import_playbook: sysctl.yml
+- import_playbook: mounts.yml
+- import_playbook: repo_Debian.yml
+- import_playbook: pkg_Debian.yml
+- import_playbook: containerd.yml
+- import_playbook: kubelet.yml
+- import_playbook: tools_crictl.yml
+- import_playbook: tools_kubeadm.yml
+- import_playbook: tools_kubectl.yml

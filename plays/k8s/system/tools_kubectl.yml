@@ -1,0 +1,16 @@
+#!/usr/bin/env -S ansible-playbook
+- hosts: k8s-master
+  gather_facts: no
+  tasks:
+    - name: Download kubectl
+      get_url:
+        url: '{{ kubectl_download_url }}'
+        dest: '{{ bin_dir }}/kubectl'
+        owner: root
+        group: root
+        mode: 0755
+        checksum: '{{ kubectl_download_checksum }}'
+      register: result
+      until: result is succeeded
+      retries: 3
+      delay: 5

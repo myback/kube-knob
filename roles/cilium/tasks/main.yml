@@ -1,0 +1,34 @@
+---
+# tasks file for cilium
+- name: Add cilium chart repo
+  community.kubernetes.helm_repository:
+    name: cilium
+    repo_url: https://helm.cilium.io/
+  tags: network
+
+- name: Install Cilium into Kubernetes cluster
+  community.kubernetes.helm:
+    name: cilium
+    chart_ref: cilium/cilium
+    chart_version: '{{ cilium_chart_version }}'
+    release_namespace: kube-system
+    values: '{{ lookup("template", "values.yml.j2") | from_yaml }}'
+    kubeconfig_path: '{{ inventory_dir }}/artifacts/kubeconfig'
+  tags: network
+
+- name: Wait for pods to run
+  command: >-
+    kubectl
+    --kubeconfig={{ inventory_dir }}/artifacts/kubeconfig
+    get pods
+    -n kube-system
+    -l k8s-app=cilium
+    -o jsonpath='{.items[?(@.status.containerStatuses[0].ready==true)].metadata.name}'
+  register: pods_not_ready
+  changed_when: false
+  until: '"cilium" in pods_not_ready.stdout'
+  retries: 30
+  delay: 10
+  ignore_errors: yes
+  when: cilium_wait_agent_after_deploy
+  tags: network

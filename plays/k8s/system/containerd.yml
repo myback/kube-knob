@@ -1,0 +1,25 @@
+#!/usr/bin/env -S ansible-playbook
+- hosts: k8s
+  gather_facts: no
+  handlers:
+    - name: Restart containerd
+      systemd:
+        name: containerd
+        enabled: yes
+        daemon_reload: yes
+        state: restarted
+  tasks:
+    - name: Install containerd.io
+      apt:
+        pkg:
+          - containernetworking-plugins
+          - containerd.io
+
+    - name: Render containerd config
+      template:
+        src: containerd.toml.j2
+        dest: /etc/containerd/config.toml
+        owner: root
+        group: root
+        mode: 0644
+      notify: Restart containerd
