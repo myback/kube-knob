@@ -1,0 +1,11 @@
+#!/usr/bin/env -S ansible-playbook
+- import_playbook: '{{ playbook_dir }}/../system/ansible_python_interpreter.yml'
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Apply default Pod Security Policies
+      command: >-
+        kubectl
+        --kubeconfig={{ kubeconfig_path_local }}
+        apply -f files/psp.yaml

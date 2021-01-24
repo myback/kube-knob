@@ -28,7 +28,9 @@
       run_once: yes
       when: not kubelet_already_running
 
-- import_playbook: 'fetch_kubeconfig.yml'
+- import_playbook: fetch_kubeconfig.yml
+- import_playbook: psp.yml
+  when: kube_pod_security_policy_enable
 
 - import_playbook: cilium.yml
   when: kube_network_plugin == "cilium"

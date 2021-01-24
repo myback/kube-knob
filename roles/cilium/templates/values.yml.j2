@@ -241,13 +241,13 @@ bpf:
   monitorFlags: "all"
 
   # -- Enable native IP masquerade support in eBPF
-  masquerade: {{ cilium_bpf_enable_masquerade }}
+  masquerade: {{ cilium_bpf_enable_masquerade | string | lower }}
 
   # -- Configure whether direct routing mode should route traffic via
   # host stack (true) or directly and more efficiently out of BPF (false) if
   # the kernel supports it. The latter has the implication that it will also
   # bypass netfilter in the host namespace.
-  #hostRouting: true
+  hostRouting: {{ cilium_bpf_host_routing | string | lower }}
 
   # -- Configure the eBPF-based TPROXY to reduce reliance on iptables rules
   # for implementing Layer 7 policy.
@@ -811,21 +811,28 @@ localRedirectPolicy: {{ cilium_local_redirect_policy }}
 # -- Enables periodic logging of system load
 logSystemLoad: false
 
-
+{% if cilium_load_balancer_algorithm == "maglev" and (cilium_maglev_table_size is defined or cilium_maglev_hash_seed is defined) -%}
 # -- Configure maglev consistent hashing
-maglev: {}
+maglev:
   # -- tableSize is the size (parameter M) for the backend table of one
   # service entry
-  # tableSize:
+  {% if cilium_maglev_table_size is defined -%}
+  tableSize: {{ cilium_maglev_table_size }}
+  {% endif -%}
 
   # -- hashSeed is the cluster-wide base64 encoded seed for the hashing
-  # hashSeed:
+  {% if cilium_maglev_hash_seed is defined -%}
+  hashSeed: {{ cilium_maglev_hash_seed }}
+  {% endif -%}
+{% else -%}
+maglev: {}
+{% endif -%}
 
 # -- Enables masquerading of traffic leaving the node for destinations
 # outside of the cluster.
 masquerade: {{ cilium_masquerade }}
 # -- Enables masquerading of IPv4 traffic leaving the node from endpoints.
-enableIPv4Masquerade: true
+enableIPv4Masquerade: {{ cilium_enable_ipv4_masquerade | string | lower }}
 
 # -- Enables masquerading of IPv6 traffic leaving the node from endpoints.
 enableIPv6Masquerade: true
@@ -838,16 +845,22 @@ nativeRoutingCIDR: {{ cilium_native_routing_cidr }}
 monitor:
   enabled: false
 
-{% if cilium_load_balancer_mode is defined -%}
 # -- Configure service load balancing
+{% if cilium_load_balancer_algorithm is defined or cilium_load_balancer_mode is defined -%}
 loadBalancer:
   # algorithm is the name of the load balancing algorithm for backend
   # selection e.g. random or maglev
-  # algorithm: "random"
+  {% if cilium_load_balancer_algorithm is defined -%}
+  algorithm: {{ cilium_load_balancer_algorithm }}
+  {% endif -%}
 
+  {% if cilium_load_balancer_mode is defined -%}
   # mode is the operation mode of load balancing for remote backends
   # e.g. snat, dsr, hybrid
   mode: {{ cilium_load_balancer_mode }}
+  {% endif -%}
+{% else -%}
+loadBalancer: {}
 {% endif -%}
 
   # acceleration is the option to accelerate service handling via XDP
