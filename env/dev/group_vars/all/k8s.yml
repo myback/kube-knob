@@ -8,7 +8,7 @@ kube_cluster_name: default
 kube_cluster_dns_domain: cluster.local
 kube_cluster_dns_ip: '{{ kube_network_service_subnet | ipaddr("net") | ipaddr(10) | ipaddr("address") }}'
 
-kubeconfig_file_path_local: '$HOME/.kube/config'
+kubeconfig_file_path_local: '{{ inventory_dir }}/artifacts/kubeconfig'
 kubeconfig_path: /etc/kubernetes/admin.conf
 
 kubelet_reserved_system_cpus: 0
@@ -21,6 +21,8 @@ kube_control_plain_endpoint: >-
   {%- else -%}
   {{ hostvars[groups["k8s-master"][0]].ansible_host }}:{{ kube_apiserver_port }}
   {%- endif -%}
+
+kube_pod_security_policy_enable: false
 
 bin_dir: /usr/local/bin
 cni_bin_dir: /usr/lib/cni

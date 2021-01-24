@@ -13,13 +13,13 @@
     chart_version: '{{ cilium_chart_version }}'
     release_namespace: kube-system
     values: '{{ lookup("template", "values.yml.j2") | from_yaml }}'
-    kubeconfig_path: '{{ inventory_dir }}/artifacts/kubeconfig'
+    kubeconfig_path: '{{ kubeconfig_file_path_local }}'
   tags: network
 
 - name: Wait for pods to run
   command: >-
     kubectl
-    --kubeconfig={{ inventory_dir }}/artifacts/kubeconfig
+    --kubeconfig={{ kubeconfig_file_path_local }}
     get pods
     -n kube-system
     -l k8s-app=cilium

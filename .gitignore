@@ -4,6 +4,6 @@
 env/test/
 collections/
 
-Vagrantfile
 *.log
+Vagrantfile
 docker-compose.yaml

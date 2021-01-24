@@ -48,7 +48,7 @@
         - name: Drain node
           command: >-
             kubectl
-            --kubeconfig={{ inventory_dir }}/artifacts/kubeconfig
+            --kubeconfig={{ kubeconfig_file_path_local }}
             drain
             {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
             --delete-local-data
@@ -82,7 +82,7 @@
         - name: Uncordon node
           command: >-
             kubectl
-            --kubeconfig={{ inventory_dir }}/artifacts/kubeconfig
+            --kubeconfig={{ kubeconfig_file_path_local }}
             uncordon
             {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
           delegate_to: localhost
@@ -110,7 +110,7 @@
         - name: Drain node
           command: >-
             kubectl
-            --kubeconfig={{ inventory_dir }}/artifacts/kubeconfig
+            --kubeconfig={{ kubeconfig_file_path_local }}
             drain
             {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
             --delete-local-data
@@ -143,7 +143,7 @@
         - name: Uncordon node
           command: >-
             kubectl
-            --kubeconfig={{ inventory_dir }}/artifacts/kubeconfig
+            --kubeconfig={{ kubeconfig_file_path_local }}
             uncordon
             {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
           delegate_to: localhost

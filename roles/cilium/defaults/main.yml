@@ -2,6 +2,7 @@
 # defaults file for cilium
 cilium_wait_agent_after_deploy: true
 
+cilium_chart_version: v1.9.1
 cilium_version: v1.9.1
 cilium_hubble_ui_version: v0.7.3
 cilium_hubble_ui_envoy_version: v1.14.5
@@ -9,10 +10,10 @@ cilium_hubble_ui_envoy_version: v1.14.5
 cilium_ui_enabled: false
 cilium_image_repository: quay.io/cilium/cilium
 cilium_image_operator_repository: quay.io/cilium/operator
-cilium_operator_replicas: 1
+cilium_operator_replicas: 2
 
 ## --enable-bpf-masquerade  | Masquerade packets from endpoints leaving the host with BPF instead of iptables
-cilium_bpf_enable_masquerade: false
+cilium_bpf_enable_masquerade: true
 ## --preallocate-bpf-maps | Enable BPF map pre-allocation
 cilium_bpf_preallocate_maps: false
 ## --kube-proxy-replacement | auto-enable available features for kube-proxy replacement ("probe"),
@@ -21,9 +22,16 @@ cilium_bpf_preallocate_maps: false
 ##   it (ignores any selected feature) ("disabled") (default "partial")
 cilium_kube_proxy_replacement: partial
 ## --tunnel string  | Tunnel mode {vxlan, geneve, disabled} (default "vxlan" for the "veth" datapath mode)
-cilium_tunnel: disabled
+cilium_tunnel: vxlan
 ## --bpf-lb-mode  | BPF load balancing mode ("snat", "dsr", "hybrid")
-cilium_load_balancer_mode: dsr
+cilium_load_balancer_mode: snat
+## --bpf-lb-algorithm | BPF load balancing algorithm ("random", "maglev")
+# cilium_load_balancer_algorithm: random
+## https://docs.cilium.io/en/v1.9/gettingstarted/kubeproxy-free/#maglev-consistent-hashing-beta
+## --bpf-lb-maglev-table-size | Maglev per service backend table size
+# cilium_maglev_table_size: 16381
+## --bpf-lb-maglev-hash-seed | Maglev cluster-wide hash seed (base64 encoded)
+# cilium_maglev_hash_seed: qt2OmdVabSzl7t4e
 ## --auto-direct-node-routes  | Enable automatic L2 routing between nodes
 cilium_auto_direct_node_routes: true
 ## Install the CNI configuration and binary files into the filesystem
@@ -31,29 +39,32 @@ cilium_cni_install: true
 ## Skip writing of the CNI configuration. This can be used if writing of the CNI configuration is performed by external automation
 cilium_cni_custom_conf: false
 ## ??? Not in cmdref: --cni-chaining-mode | Possible values: "none", "generic-veth", "aws-cni", "portmap"
-cilium_cni_chaining_mode: portmap
+cilium_cni_chaining_mode: none
 ## --enable-bandwidth-manager | Enable BPF bandwidth manager
 cilium_bandwidth_manager: true
 ## --enable-host-port | Enable k8s hostPort mapping feature (requires enabling enable-node-port)
 cilium_host_port: false
 ## --enable-node-port | Enable NodePort type services by Cilium
-cilium_node_port: true
+cilium_node_port: false
 ## --enable-host-reachable-services | Enable reachability of services for host applications
-cilium_host_services: true
+cilium_host_services: false
 ## --enable-external-ips  | Enable k8s service externalIPs feature (requires enabling enable-node-port)
-cilium_external_ips: true
+cilium_external_ips: false
 ## --devices  | List of devices facing cluster/external network (used for BPF NodePort, BPF masquerading and host firewall)
 cilium_devices: []
 ## --enable-endpoint-routes | Use per endpoint routes instead of routing via cilium_host
 cilium_enable_endpoint_routes: true
 ## --enable-l7-proxy  | Enable L7 proxy for L7 policy enforcement
-cilium_enable_l7_proxy: false
+cilium_enable_l7_proxy: true
 ## --enable-local-redirect-policy | Enable Local Redirect Policy
-cilium_local_redirect_policy: false
+cilium_local_redirect_policy: true
 ## --enable-policy  | Enable policy enforcement (default "default")
 cilium_policy_enforcement_mode: default
 ## --native-routing-cidr  | Allows to explicitly specify the CIDR for native routing. This value corresponds to the configured cluster-cidr.
 cilium_native_routing_cidr: '{{ kube_network_pods_subnet | default("10.0.0.0/8") }}'
+cilium_bpf_host_routing: true
+cilium_enable_ipv4_masquerade: true
+
 #### Operator
 ## --cluster-pool-ipv4-cidr | IPv4 CIDR Range for Pods in cluster. Requires 'ipam=cluster-pool' and 'enable-ipv4=true'
 cilium_cluster_pool_ipv4_pod_cidr: '{{ kube_network_pods_subnet | default("10.0.0.0/8") }}'
