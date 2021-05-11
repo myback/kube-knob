@@ -14,21 +14,7 @@
     release_namespace: kube-system
     values: '{{ lookup("template", "values.yml.j2") | from_yaml }}'
     kubeconfig_path: '{{ kubeconfig_file_path_local }}'
-  tags: network
-
-- name: Wait for pods to run
-  command: >-
-    kubectl
-    --kubeconfig={{ kubeconfig_file_path_local }}
-    get pods
-    -n kube-system
-    -l k8s-app=cilium
-    -o jsonpath='{.items[?(@.status.containerStatuses[0].ready==true)].metadata.name}'
-  register: pods_not_ready
-  changed_when: false
-  until: '"cilium" in pods_not_ready.stdout'
-  retries: 30
-  delay: 10
-  ignore_errors: yes
-  when: cilium_wait_agent_after_deploy
+    atomic: yes
+    wait: yes
+    wait_timeout: 180s
   tags: network

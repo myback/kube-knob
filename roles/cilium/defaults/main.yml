@@ -2,16 +2,24 @@
 # defaults file for cilium
 cilium_wait_agent_after_deploy: true
 
-cilium_chart_version: v1.9.1
-cilium_version: v1.9.1
+cilium_chart_version: v1.9.6
+cilium_version: v1.9.6
 cilium_hubble_ui_version: v0.7.3
-cilium_hubble_ui_envoy_version: v1.14.5
+cilium_hubble_ui_envoy_version: v1.18.2@sha256:e8b37c1d75787dd1e712ff389b0d37337dc8a174a63bed9c34ba73359dc67da7
 
-cilium_ui_enabled: false
 cilium_image_repository: quay.io/cilium/cilium
 cilium_image_operator_repository: quay.io/cilium/operator
+cilium_image_hubble_relay_repository: quay.io/cilium/hubble-relay
+cilium_image_hubble_ui_backend_repository: quay.io/cilium/hubble-ui-backend
+cilium_image_envoy_repository: docker.io/envoyproxy/envoy
 cilium_operator_replicas: 2
 
+cilium_hubble_enabled: false
+cilium_hubble_ui_ingress_enabled: false
+cilium_hubble_ui_ingress_host:
+  - chart-example.local
+cilium_hubble_ui_ingress_annotations: {}
+cilium_hubble_ui_ingress_tls: []
 ## --enable-bpf-masquerade  | Masquerade packets from endpoints leaving the host with BPF instead of iptables
 cilium_bpf_enable_masquerade: true
 ## --preallocate-bpf-maps | Enable BPF map pre-allocation
@@ -77,7 +85,7 @@ cilium_cri_socket: '{{ cri_socket | default("") }}'
 cilium_masquerade: true
 
 ## ETCD
-cilium_cluster_domain: '{{ kube_cluster_dns_domain | default("default") }}'
+# cilium_cluster_domain: '{{ kube_cluster_dns_domain | default("default") }}'
 
 ## ref: https://docs.cilium.io/en/stable/concepts/networking/ipam/
 ## --ipam | Backend to use for IPAM (default "cluster-pool")
