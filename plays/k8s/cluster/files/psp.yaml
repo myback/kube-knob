@@ -14,7 +14,7 @@ spec:
     rule: 'MustRunAs'
     ranges:
       # Forbid adding the root group.
-      - min: 1000
+      - min: 1
         max: 65535
   hostIPC: false
   hostNetwork: false
@@ -29,7 +29,7 @@ spec:
     rule: 'MustRunAs'
     ranges:
       # Forbid adding the root group.
-      - min: 1000
+      - min: 1
         max: 65535
   volumes:
   - 'configMap'
@@ -38,6 +38,14 @@ spec:
   - 'persistentVolumeClaim'
   - 'projected'
   - 'secret'
+  # runAsUser:
+  #   rule: 'RunAsAny'
+  # seLinux:
+  #   rule: 'RunAsAny'
+  # supplementalGroups:
+  #   rule: 'RunAsAny'
+  # fsGroup:
+  #   rule: 'RunAsAny'
 ---
 # Cluster role which grants access to the default pod security policy
 apiVersion: rbac.authorization.k8s.io/v1
@@ -54,7 +62,7 @@ rules:
   verbs:
   - use
 ---
-# Cluster role binding for default pod security policy granting replicaset-controller
+# Cluster role binding for default pod security policy granting all authenticated users access
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -99,12 +107,7 @@ spec:
   supplementalGroups:
     rule: 'RunAsAny'
   volumes:
-  - 'configMap'
-  - 'downwardAPI'
-  - 'emptyDir'
-  - 'persistentVolumeClaim'
-  - 'projected'
-  - 'secret'
+  - '*'
 ---
 # Cluster role which grants access to the privileged pod security policy
 apiVersion: rbac.authorization.k8s.io/v1

@@ -1,5 +1,5 @@
 #!/usr/bin/env -S ansible-playbook
-- hosts: localhost
+- hosts: workstation
   gather_facts: no
   tasks:
     - name: Set Ansible Python interpreter variable

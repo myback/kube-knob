@@ -6,10 +6,6 @@
       set_fact:
         kernel_modules:
           - br_netfilter
-          - ip_vs
-          - ip_vs_rr
-          - ip_vs_wrr
-          - ip_vs_sh
 
     - name: Load kernel module
       modprobe:

@@ -1,0 +1,28 @@
+{21-04-12 4:50}fopacize:~ root# cat /etc/systemd/timesyncd.conf
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+#
+# Entries in this file show the compile time defaults.
+# You can change settings by editing this file.
+# Defaults can be restored by simply deleting this file.
+#
+# See timesyncd.conf(5) for details.
+
+[Time]
+{% if ntp_servers is defined and ntp_servers %}
+NTP={{ ntp_servers | join(" ") }}
+{% else %}
+#NTP=
+{% endif %}
+{% if ntp_servers_fallback is defined and ntp_servers_fallback %}
+FallbackNTP={{ ntp_servers_fallback | join(" ") }}
+{% else %}
+#FallbackNTP=ntp.ubuntu.com
+{% endif %}
+#RootDistanceMaxSec=5
+#PollIntervalMinSec=32
+#PollIntervalMaxSec=2048

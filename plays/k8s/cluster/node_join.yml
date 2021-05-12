@@ -2,6 +2,7 @@
 - import_playbook: facts.yml
 
 - hosts: k8s
+  gather_facts: no
   tasks:
     - name: Token creation
       block:

@@ -2,7 +2,7 @@
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 nodeStatusUpdateFrequency: 10s
-address: {{ kubelet_bind_address | default("127.0.0.1") }}
+address: {{ kubelet_bind_address | default("0.0.0.0") }}
 failSwapOn: true
 cgroupDriver: cgroupfs
 maxPods: {{ kube_node_max_pods | default(110) }}

@@ -3,8 +3,8 @@ cri_socket: /run/containerd/containerd.sock
 registry_mirrors: {}
   # docker.io: ["host1", "host2"]
 
-kube_version: v1.20.2
-crictl_version: v1.20.0
+kube_version: v1.20.6
+crictl_version: v1.21.0
 
 kube_rewrite_nodename: true
 kube_manifest_dir: /etc/kubernetes/manifests
@@ -12,7 +12,7 @@ kube_manifest_dir: /etc/kubernetes/manifests
 # kube_tls_min_version: VersionTLS12
 
 kubeadm_config_path: /root/kubeadmconfig.yaml
-kube_apiserver_anonymous_auth_disable: false
+kube_apiserver_anonymous_auth_disable: false  # DO NOT CHANGE THIS VARIABLE
 
 kube_profiling: false
 kube_tls_cipher_suites:

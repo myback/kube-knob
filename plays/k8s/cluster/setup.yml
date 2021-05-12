@@ -30,9 +30,8 @@
 
 - import_playbook: fetch_kubeconfig.yml
 - import_playbook: psp.yml
-  when: kube_pod_security_policy_enable
 
-- import_playbook: cilium.yml
+- import_playbook: ../cni/cilium.yml
   when: kube_network_plugin == "cilium"
 
 - import_playbook: node_join.yml

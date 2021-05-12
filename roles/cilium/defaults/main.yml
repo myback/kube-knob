@@ -10,11 +10,19 @@ cilium_hubble_ui_envoy_version: v1.18.2@sha256:e8b37c1d75787dd1e712ff389b0d37337
 cilium_image_repository: quay.io/cilium/cilium
 cilium_image_operator_repository: quay.io/cilium/operator
 cilium_image_hubble_relay_repository: quay.io/cilium/hubble-relay
+cilium_image_hubble_ui_repository: quay.io/cilium/hubble-ui
 cilium_image_hubble_ui_backend_repository: quay.io/cilium/hubble-ui-backend
 cilium_image_envoy_repository: docker.io/envoyproxy/envoy
 cilium_operator_replicas: 2
 
+cilium_agent_rollout_pods: false
+
+cilium_operator_enabled: true
+cilium_operator_rollout_pods: false
+
 cilium_hubble_enabled: false
+cilium_hubble_ui_enabled: false
+cilium_hubble_ui_relay_enabled: false
 cilium_hubble_ui_ingress_enabled: false
 cilium_hubble_ui_ingress_host:
   - chart-example.local
@@ -28,26 +36,26 @@ cilium_bpf_preallocate_maps: false
 ##   or enable only selected features (will panic if any selected feature cannot be enabled) ("partial")
 ##   or enable all features (will panic if any feature cannot be enabled) ("strict"), or completely disable
 ##   it (ignores any selected feature) ("disabled") (default "partial")
-cilium_kube_proxy_replacement: partial
+cilium_kube_proxy_replacement: strict
 ## --tunnel string  | Tunnel mode {vxlan, geneve, disabled} (default "vxlan" for the "veth" datapath mode)
 cilium_tunnel: vxlan
 ## --bpf-lb-mode  | BPF load balancing mode ("snat", "dsr", "hybrid")
-cilium_load_balancer_mode: snat
+cilium_load_balancer_mode: dsr
 ## --bpf-lb-algorithm | BPF load balancing algorithm ("random", "maglev")
-# cilium_load_balancer_algorithm: random
+cilium_load_balancer_algorithm: maglev
 ## https://docs.cilium.io/en/v1.9/gettingstarted/kubeproxy-free/#maglev-consistent-hashing-beta
 ## --bpf-lb-maglev-table-size | Maglev per service backend table size
 # cilium_maglev_table_size: 16381
 ## --bpf-lb-maglev-hash-seed | Maglev cluster-wide hash seed (base64 encoded)
 # cilium_maglev_hash_seed: qt2OmdVabSzl7t4e
 ## --auto-direct-node-routes  | Enable automatic L2 routing between nodes
-cilium_auto_direct_node_routes: true
+cilium_auto_direct_node_routes: false
 ## Install the CNI configuration and binary files into the filesystem
 cilium_cni_install: true
 ## Skip writing of the CNI configuration. This can be used if writing of the CNI configuration is performed by external automation
 cilium_cni_custom_conf: false
 ## ??? Not in cmdref: --cni-chaining-mode | Possible values: "none", "generic-veth", "aws-cni", "portmap"
-cilium_cni_chaining_mode: none
+cilium_cni_chaining_mode: portmap
 ## --enable-bandwidth-manager | Enable BPF bandwidth manager
 cilium_bandwidth_manager: true
 ## --enable-host-port | Enable k8s hostPort mapping feature (requires enabling enable-node-port)
@@ -57,7 +65,7 @@ cilium_node_port: false
 ## --enable-host-reachable-services | Enable reachability of services for host applications
 cilium_host_services: false
 ## --enable-external-ips  | Enable k8s service externalIPs feature (requires enabling enable-node-port)
-cilium_external_ips: false
+cilium_enable_external_ips: false
 ## --devices  | List of devices facing cluster/external network (used for BPF NodePort, BPF masquerading and host firewall)
 cilium_devices: []
 ## --enable-endpoint-routes | Use per endpoint routes instead of routing via cilium_host

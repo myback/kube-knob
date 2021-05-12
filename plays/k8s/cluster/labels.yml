@@ -1,5 +1,5 @@
 #!/usr/bin/env -S ansible-playbook
-- import_playbook: '{{ playbook_dir }}/../system/ansible_python_interpreter.yml'
+- import_playbook: '{{ playbook_dir }}/../../ansible_python_interpreter.yml'
 
 - hosts: k8s-worker
   gather_facts: no
@@ -22,12 +22,11 @@
           {%- if labels is defined -%}
           {{ labels.split(",") }}
           {%- endif -%}
-      tags: roles
 
     - name: Set labels on worker node
       command: >-
         kubectl
-        --kubeconfig={{ kubeconfig_file_path_local }}
+        --kubeconfig={{ kubeconfig_path_local }}
         label node
         {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
         {{ node_roles | join(" ") }}
@@ -37,5 +36,4 @@
       failed_when: kubectl_resp.rc != 0 and "already has a value" not in kubectl_resp.stderr
       changed_when: kubectl_resp.rc == 0
       delegate_to: localhost
-      tags: roles
       when: node_labels or node_roles
