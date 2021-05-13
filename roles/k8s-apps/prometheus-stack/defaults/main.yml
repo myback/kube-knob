@@ -1,0 +1,3 @@
+prometheus_stack_namespace: monitoring
+
+prometheus_metrics_retention: 10d

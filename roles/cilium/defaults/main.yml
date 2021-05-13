@@ -40,7 +40,7 @@ cilium_kube_proxy_replacement: strict
 ## --tunnel string  | Tunnel mode {vxlan, geneve, disabled} (default "vxlan" for the "veth" datapath mode)
 cilium_tunnel: vxlan
 ## --bpf-lb-mode  | BPF load balancing mode ("snat", "dsr", "hybrid")
-cilium_load_balancer_mode: dsr
+cilium_load_balancer_mode: snat
 ## --bpf-lb-algorithm | BPF load balancing algorithm ("random", "maglev")
 cilium_load_balancer_algorithm: maglev
 ## https://docs.cilium.io/en/v1.9/gettingstarted/kubeproxy-free/#maglev-consistent-hashing-beta
@@ -57,7 +57,7 @@ cilium_cni_custom_conf: false
 ## ??? Not in cmdref: --cni-chaining-mode | Possible values: "none", "generic-veth", "aws-cni", "portmap"
 cilium_cni_chaining_mode: portmap
 ## --enable-bandwidth-manager | Enable BPF bandwidth manager
-cilium_bandwidth_manager: true
+cilium_bandwidth_manager: false
 ## --enable-host-port | Enable k8s hostPort mapping feature (requires enabling enable-node-port)
 cilium_host_port: false
 ## --enable-node-port | Enable NodePort type services by Cilium

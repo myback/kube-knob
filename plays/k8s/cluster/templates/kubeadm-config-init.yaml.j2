@@ -1,7 +1,7 @@
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: InitConfiguration
 localAPIEndpoint:
-  advertiseAddress: {{ ansible_host }}
+  advertiseAddress: {{ ansible_default_ipv4.address }}
   bindPort: {{ kube_apiserver_port }}
 nodeRegistration:
 {% if kube_rewrite_nodename %}
@@ -37,11 +37,11 @@ etcd:
   local:
     serverCertSANs:
 {% for host in groups["k8s-master"] %}
-      - {{ hostvars[host].ansible_host }}
+      - {{ hostvars[host].ansible_default_ipv4.address }}
 {% endfor %}
     peerCertSANs:
 {% for host in groups["k8s-master"] %}
-      - {{ hostvars[host].ansible_host }}
+      - {{ hostvars[host].ansible_default_ipv4.address }}
 {% endfor %}
 apiServer:
   extraArgs:
@@ -97,10 +97,10 @@ apiServer:
     - localhost
     - 127.0.0.1
 {% for host in groups["k8s-master"] %}
-    - {{ hostvars[host].ansible_host }}
+    - {{ hostvars[host].ansible_default_ipv4.address }}
 {% endfor %}
 {% if kube_load_balancer_addr is defined %}
-    - {{ kube_load_balancer_addr.split(':')[0] }}
+    - {{ kube_load_balancer_addr.split(":")[0] }}
 {% endif %}
   timeoutForControlPlane: 5m0s
 scheduler:

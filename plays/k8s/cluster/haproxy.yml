@@ -1,0 +1,24 @@
+#!/usr/bin/env -S ansible-playbook
+- hosts: k8s-master
+  gather_facts: no
+  tasks:
+    - name: Run kubelet_pods/haproxy role
+      include_role:
+        name: kubelet_pods/haproxy
+      vars:
+        haproxy_bind: '0.0.0.0:{{ kube_control_plain_endpoint.split(":")[1] }}'
+      when:
+        - keepalived_enabled
+        - kube_load_balancer_addr is defined
+
+- hosts: k8s-worker
+  gather_facts: no
+  tasks:
+    - name: Run kubelet_pods/haproxy role
+      include_role:
+        name: kubelet_pods/haproxy
+      vars:
+        haproxy_bind: 127.0.0.1:16443
+      when:
+        - kube_load_balancer_addr is not defined
+        - groups["k8s-master"] | length > 1

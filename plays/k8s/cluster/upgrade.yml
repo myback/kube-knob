@@ -22,7 +22,7 @@
         - name: Download kubeadm
           get_url:
             url: '{{ kubeadm_download_url }}'
-            dest: '{{ bin_dir }}/kubeadm'
+            dest: '{{ kube_bin_dir }}/kubeadm'
             owner: root
             group: root
             mode: 0755
@@ -35,7 +35,7 @@
         - name: Download kubectl
           get_url:
             url: '{{ kubectl_download_url }}'
-            dest: '{{ bin_dir }}/kubectl'
+            dest: '{{ kube_bin_dir }}/kubectl'
             owner: root
             group: root
             mode: 0755
@@ -50,7 +50,7 @@
             kubectl
             --kubeconfig={{ kubeconfig_path_local }}
             drain
-            {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
+            {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_default_ipv4.addressname }}{% endif %}
             --delete-local-data
             --ignore-daemonsets
           delegate_to: localhost
@@ -62,7 +62,7 @@
         - name: Download kubelet
           get_url:
             url: '{{ kubelet_download_url }}'
-            dest: '{{ bin_dir }}/kubelet'
+            dest: '{{ kube_bin_dir }}/kubelet'
             owner: root
             group: root
             mode: 0755
@@ -84,7 +84,7 @@
             kubectl
             --kubeconfig={{ kubeconfig_path_local }}
             uncordon
-            {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
+            {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_default_ipv4.addressname }}{% endif %}
           delegate_to: localhost
       when: need_upgrade
 
@@ -97,7 +97,7 @@
         - name: Download kubeadm
           get_url:
             url: '{{ kubeadm_download_url }}'
-            dest: '{{ bin_dir }}/kubeadm'
+            dest: '{{ kube_bin_dir }}/kubeadm'
             owner: root
             group: root
             mode: 0755
@@ -112,7 +112,7 @@
             kubectl
             --kubeconfig={{ kubeconfig_path_local }}
             drain
-            {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
+            {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_default_ipv4.addressname }}{% endif %}
             --delete-local-data
             --ignore-daemonsets
           delegate_to: localhost
@@ -123,7 +123,7 @@
         - name: Download kubelet
           get_url:
             url: '{{ kubelet_download_url }}'
-            dest: '{{ bin_dir }}/kubelet'
+            dest: '{{ kube_bin_dir }}/kubelet'
             owner: root
             group: root
             mode: 0755
@@ -145,8 +145,7 @@
             kubectl
             --kubeconfig={{ kubeconfig_path_local }}
             uncordon
-            {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_hostname }}{% endif %}
+            {% if kube_rewrite_nodename %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_default_ipv4.addressname }}{% endif %}
           delegate_to: localhost
       when: need_upgrade
 # - import_playbook: '{{ playbook_dir }}/../system/setup.yml'
-

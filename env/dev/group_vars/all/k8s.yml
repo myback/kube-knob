@@ -19,10 +19,9 @@ kube_control_plain_endpoint: >-
   {%- if kube_load_balancer_addr is defined -%}
   {{ kube_load_balancer_addr }}
   {%- else -%}
-  {{ hostvars[groups["k8s-master"][0]].ansible_host }}:{{ kube_apiserver_port }}
+  {{ hostvars[groups["k8s-master"][0]].ansible_default_ipv4.address }}:{{ kube_apiserver_port }}
   {%- endif -%}
 
-bin_dir: /usr/local/bin
-cni_bin_dir: /usr/lib/cni
-cni_conf_dir: /etc/cni/net.d
-temp_dir: /var/cache/kubernetes
+kube_bin_dir: /usr/local/bin
+kube_cni_bin_dir: /usr/lib/cni
+kube_cni_conf_dir: /etc/cni/net.d

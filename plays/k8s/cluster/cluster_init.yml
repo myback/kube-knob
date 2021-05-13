@@ -1,0 +1,52 @@
+#!/usr/bin/env -S ansible-playbook
+- import_playbook: '{{ playbook_dir }}/../system/setup.yml'
+- import_playbook: facts.yml
+
+- hosts: k8s-master
+  gather_facts: no
+  tasks:
+    - name: Init first node of Kubernetes cluster
+      block:
+        - name: Generate kubeadm token
+          set_fact:
+            kubeadm_token: '{{ lookup("password", "/dev/null chars=ascii_lowercase,digits length=6") }}.{{ lookup("password", "/dev/null chars=ascii_lowercase,digits length=16") }}'
+            keepalived_state: MASTER
+
+        - name: Render init kubeadm config
+          template:
+            src: kubeadm-config-init.yaml.j2
+            dest: '{{ kubeadm_config_path }}'
+            owner: root
+            group: root
+            mode: 0600
+
+        - name: Run kubelet_pods/keepalived role
+          include_role:
+            name: kubelet_pods/keepalived
+          when:
+            - kube_load_balancer_addr is defined
+            - keepalived_enabled
+
+        - name: Run kubelet_pods/haproxy role
+          include_role:
+            name: kubelet_pods/haproxy
+          vars:
+            haproxy_bind: '0.0.0.0:{{ kube_control_plain_endpoint.split(":")[1] }}'
+          when:
+            - kube_load_balancer_addr is defined
+            - keepalived_enabled
+
+        - name: Init first Kubernetes node {% if kubeadm_init_phases_skip %}with skip phases {{ kubeadm_init_phases_skip | join(",") }}{% endif %}
+          command: >-
+            kubeadm init
+            --upload-certs
+            --config={{ kubeadm_config_path }}
+            {% if kubeadm_init_phases_skip %} --skip-phases={{ kubeadm_init_phases_skip | join(",") }}{% endif %}
+      run_once: yes
+      when: not kubelet_already_running
+
+- import_playbook: fetch_kubeconfig.yml
+- import_playbook: psp.yml
+
+- import_playbook: ../cni/cilium.yml
+  when: kube_network_plugin == "cilium"

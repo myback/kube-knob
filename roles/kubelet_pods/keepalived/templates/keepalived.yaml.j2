@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: keepalived
+  namespace: kube-system
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+    k8s-app: kube-keepalived
+spec:
+  hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
+  nodeSelector:
+    kubernetes.io/os: linux
+  priorityClassName: system-node-critical
+  containers:
+  - name: keepalived
+    image: {{ keepalived_image_repo }}:{{ keepalived_image_tag }}
+    imagePullPolicy: IfNotPresent
+    env:
+      - name: KEEPALIVED_INTERFACE
+        value: "{{ ansible_default_ipv4.interface }}"
+      - name: KEEPALIVED_PASSWORD
+        value: "{{ keepalived_password }}"
+      - name: KEEPALIVED_PRIORITY
+        value: "{{ 100 - groups["k8s-master"].index(inventory_hostname) }}"
+      - name: KEEPALIVED_ROUTER_ID
+        value: "{{ keepalived_router_id }}"
+      - name: KEEPALIVED_UNICAST_PEERS
+        value: "#PYTHON2BASH:['{{ groups["k8s-master"] | join("','") }}']"
+      - name: KEEPALIVED_VIRTUAL_IPS
+        value: "#PYTHON2BASH:['{{ kube_control_plain_endpoint.split(":")[0] }}']"
+      - name: KEEPALIVED_STATE
+        value: "{{ keepalived_state | default("BACKUP") }}"
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64M
+    securityContext:
+      privileged: true
+      capabilities:
+        add:
+          - NET_ADMIN
+          - NET_BROADCAST
+          - NET_RAW

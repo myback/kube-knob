@@ -3,8 +3,14 @@ cri_socket: /run/containerd/containerd.sock
 registry_mirrors: {}
   # docker.io: ["host1", "host2"]
 
+keepalived_enabled: false
+
 kube_version: v1.20.6
-crictl_version: v1.21.0
+crictl_version: v1.20.0
+
+kube_cluster_dns_ip: '{{ kube_network_service_subnet | ipaddr("net") | ipaddr(10) | ipaddr("address") }}'
+
+kubelet_reserved_system_cpus: 0
 
 kube_rewrite_nodename: true
 kube_manifest_dir: /etc/kubernetes/manifests
@@ -12,7 +18,7 @@ kube_manifest_dir: /etc/kubernetes/manifests
 # kube_tls_min_version: VersionTLS12
 
 kubeadm_config_path: /root/kubeadmconfig.yaml
-kube_apiserver_anonymous_auth_disable: false  # DO NOT CHANGE THIS VARIABLE
+kube_apiserver_anonymous_auth_disable: false
 
 kube_profiling: false
 kube_tls_cipher_suites:
@@ -24,3 +30,25 @@ kube_tls_cipher_suites:
   - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
   - TLS_RSA_WITH_AES_128_GCM_SHA256
   - TLS_RSA_WITH_AES_256_GCM_SHA384
+
+# kube_image_repository: k8s.gcr.io
+
+# kube_apiserver_logs_path: /var/log/kube/apiserver
+# kube_apiserver_audit:
+#   policy_file: '{{ kube_admission_configs }}/audit-policy.yaml'
+#   log_maxage: 30
+#   log_maxbackup: 3
+#   log_maxsize: 100
+#   log_path: '{{ kube_apiserver_logs_path }}/audit.log'
+#   webhook:
+#     config_file: '{{ kube_admission_configs }}/webhook-config.yaml'
+#     mode: ""
+#     batch_max_size: ""
+#     batch_max_wait: ""
+kube_admission_configs_path: /etc/kubernetes/admission-configs
+kube_admission_plugins: []
+
+kube_controller_manager_bind_address: 127.0.0.1
+kube_scheduler_bind_address: 127.0.0.1
+
+kubeadm_init_phases_skip: [ "addon/kube-proxy" ]

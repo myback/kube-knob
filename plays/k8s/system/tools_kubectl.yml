@@ -5,7 +5,7 @@
     - name: Download kubectl
       get_url:
         url: '{{ kubectl_download_url }}'
-        dest: '{{ bin_dir }}/kubectl'
+        dest: '{{ kube_bin_dir }}/kubectl'
         owner: root
         group: root
         mode: 0755

@@ -1,5 +1,7 @@
 #!/usr/bin/env -S ansible-playbook
 - import_playbook: facts.yml
+- import_playbook: keepalived.yml
+- import_playbook: haproxy.yml
 
 - hosts: k8s
   gather_facts: no
@@ -26,7 +28,7 @@
         - name: Set kubeadm token
           set_fact:
             kubeadm_token: '{{ kubeadm_token_temp }}'
-      run_once: true
+      run_once: yes
       delegate_to: '{{ groups["k8s-master"][0] }}'
       when: kubeadm_token is not defined
 
@@ -42,8 +44,7 @@
 
         - name: Join node to cluster
           command: >-
-            kubeadm join --config={{ kubeadm_config_path }}
+            kubeadm join --config={{ kubeadm_config_path }} --ignore-preflight-errors=DirAvailable--etc-kubernetes-manifests
       when: not kubelet_already_running
 
 - import_playbook: labels.yml
-- import_playbook: api_lb.yml

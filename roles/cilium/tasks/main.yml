@@ -4,7 +4,6 @@
   community.kubernetes.helm_repository:
     name: cilium
     repo_url: https://helm.cilium.io/
-  tags: network
 
 - name: Install Cilium into Kubernetes cluster
   community.kubernetes.helm:
@@ -17,4 +16,3 @@
     atomic: yes
     wait: yes
     wait_timeout: 120s
-  tags: network

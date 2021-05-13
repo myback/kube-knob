@@ -1,0 +1,38 @@
+- name: Ensure the directory {{ haproxy_config_dir }} is exists
+  file:
+    path: '{{ haproxy_config_dir }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Render {{ haproxy_config_dir }}/haproxy.cfg
+  template:
+    src: haproxy.cfg.j2
+    dest: '{{ haproxy_config_dir }}/haproxy.cfg'
+    owner: root
+    group: root
+    mode: 0640
+
+- name: Get checksum of config
+  stat:
+    path: '{{ haproxy_config_dir }}/haproxy.cfg'
+  register: haproxy_stat
+
+- name: Render haproxy static pod manifest
+  template:
+    src: haproxy.manifest.yaml.j2
+    dest: '{{ kube_manifest_dir }}/haproxy.yaml'
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Render kubelet.conf
+  template:
+    src: kubelet.conf.j2
+    dest: /etc/kubernetes/kubelet.conf
+    owner: root
+    group: root
+    mode: 0600
+  when: inventory_hostname in groups["k8s-worker"]
+  notify: Restart kubelet

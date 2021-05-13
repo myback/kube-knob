@@ -21,7 +21,7 @@ nodeRegistration:
 {% endif %}
 controlPlane:
   localAPIEndpoint:
-    advertiseAddress: {{ ansible_host }}
+    advertiseAddress: {{ ansible_default_ipv4.address }}
     bindPort: {{ kube_apiserver_port }}
   certificateKey: {{ kubeadm_certificate_key }}
 {% endif %}

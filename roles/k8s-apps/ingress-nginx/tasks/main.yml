@@ -1,0 +1,19 @@
+---
+# tasks file for ingress-nginx
+- name: Add ingress-nginx chart repo
+  community.kubernetes.helm_repository:
+    name: ingress-nginx
+    repo_url: https://kubernetes.github.io/ingress-nginx
+
+- name: Install {{ ingress_nginx_release_name }} into Kubernetes cluster
+  community.kubernetes.helm:
+    name: '{{ ingress_nginx_release_name }}'
+    chart_ref: ingress-nginx/ingress-nginx
+    chart_version: '{{ ingress_nginx_chart_version }}'
+    release_namespace: '{{ ingress_nginx_release_namespace }}'
+    create_namespace: yes
+    values: '{{ lookup("template", "values.yml.j2") | from_yaml }}'
+    kubeconfig_path: '{{ kubeconfig_path_local }}'
+    atomic: yes
+    wait: yes
+    wait_timeout: 120s

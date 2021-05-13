@@ -1,0 +1,41 @@
+---
+# defaults file for ingress-nginx
+ingress_nginx_release_name: ingress-nginx
+ingress_nginx_chart_release_namespace: ingress-nginx
+ingress_nginx_chart_version: 3.23.0
+
+ingress_nginx_class: nginx
+ingress_nginx_sysctls: {}
+ingress_nginx_kind: Deployment
+
+ingress_nginx_tolerations: []
+ingress_nginx_affinity: {}
+ingress_nginx_pod_anti_affinity: {}
+ingress_nginx_node_selector:
+  kubernetes.io/os: linux
+
+ingress_nginx_service_type: LoadBalancer
+ingress_nginx_service_external_IPs: []
+
+ingress_nginx_metrics_enabled: false
+ingress_nginx_metrics_service_monitor_enabled: false
+ingress_nginx_metrics_service_monitor_scrape_interval: 30s
+ingress_nginx_metrics_prometheus_rule_enabled: false
+ingress_nginx_metrics_prometheus_rules: []
+
+ingress_nginx_service_account: true
+ingress_nginx_rbac: true
+ingress_nginx_pod_security_policy: false
+ingress_nginx_pod_security_context: {}
+
+ingress_nginx_repository: k8s.gcr.io/ingress-nginx/controller
+ingress_nginx_repository_tag: v0.44.0
+
+ingress_nginx_admission_webhooks_enabled: true
+ingress_nginx_admission_webhooks_patch_enabled: true
+ingress_nginx_admission_webhooks_patch_repository: docker.io/jettech/kube-webhook-certgen
+ingress_nginx_admission_webhooks_patch_repository_tag: v1.5.1
+
+ingress_nginx_default_backend_enabled: false
+ingress_nginx_default_backend_repository: k8s.gcr.io/defaultbackend-amd64
+ingress_nginx_default_backend_repository_tag: 1.5

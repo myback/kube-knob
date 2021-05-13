@@ -1,0 +1,22 @@
+- import_playbook: '{{ playbook_dir }}/../../ansible_python_interpreter.yml'
+
+- hosts: workstation
+  roles:
+    - name: k8s-apps/ingress-nginx
+      vars:
+        ingress_nginx_class: nginx
+        ingress_nginx_release_name: ingress-nginx
+        ingress_nginx_release_namespace: ingress-nginx
+        ingress_nginx_replica_count: 1
+        ingress_nginx_affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/component
+                      operator: In
+                      values:
+                        - controller
+                topologyKey: kubernetes.io/hostname
+        ingress_nginx_service_type: ClusterIP
+        ingress_nginx_pod_security_policy: true

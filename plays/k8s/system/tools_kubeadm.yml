@@ -5,7 +5,7 @@
     - name: Download kubeadm
       get_url:
         url: '{{ kubeadm_download_url }}'
-        dest: '{{ bin_dir }}/kubeadm'
+        dest: '{{ kube_bin_dir }}/kubeadm'
         owner: root
         group: root
         mode: 0755

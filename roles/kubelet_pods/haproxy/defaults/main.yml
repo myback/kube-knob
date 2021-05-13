@@ -1,5 +1,3 @@
----
-haproxy_frontend_port: 16443
 haproxy_livez_port: 45678
 haproxy_config_dir: /etc/haproxy
 

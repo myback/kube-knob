@@ -15,8 +15,8 @@ imagePullSecrets:
 
 # kubeConfigPath: ~/.kube/config
 {% if cilium_kube_proxy_replacement in [ 'strict', 'partial' ] -%}
-k8sServiceHost: {{ kube_control_plain_endpoint.split(':')[0] }}
-k8sServicePort: {{ kube_control_plain_endpoint.split(':')[1] }}
+k8sServiceHost: {{ kube_control_plain_endpoint.split(":")[0] }}
+k8sServicePort: {{ kube_control_plain_endpoint.split(":")[1] }}
 {% endif -%}
 
 cluster:
@@ -284,16 +284,16 @@ cni:
   customConf: {{ cilium_cni_custom_conf }}
 
   # -- Configure the path to the CNI configuration directory on the host.
-  confPath: {{ cni_conf_dir }}
+  confPath: {{ kube_cni_conf_dir }}
 
   # -- Configure the path to the CNI binary directory on the host.
-  binPath: {{ cni_bin_dir }}
+  binPath: {{ kube_cni_bin_dir }}
 
   # -- Specify the path to a CNI config to read from on agent start.
   # This can be useful if you want to manage your CNI
   # configuration outside of a Kubernetes environment. This parameter is
   # mutually exclusive with the 'cni.configMap' parameter.
-  # readCniConf: /host{{ cni_conf_dir }}/05-cilium.conf
+  # readCniConf: /host{{ kube_cni_conf_dir }}/05-cilium.conf
 
   # -- When defined, configMap will mount the provided value as ConfigMap and
   # interpret the cniConf variable as CNI configuration file and write it
@@ -309,7 +309,7 @@ cni:
 
   # -- Configure the path to where the CNI configuration directory is mounted
   # inside the agent pod.
-  hostConfDirMountPath: /host{{ cni_conf_dir }}
+  hostConfDirMountPath: /host{{ kube_cni_conf_dir }}
 
 # -- Configure how frequently garbage collection should occur for the datapath
 # connection tracking table.

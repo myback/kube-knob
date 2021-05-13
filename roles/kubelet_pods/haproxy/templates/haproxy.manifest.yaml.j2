@@ -25,16 +25,6 @@ spec:
         memory: 128M
     securityContext:
       privileged: true
-    livenessProbe:
-      httpGet:
-        path: /livez
-        port: {{ haproxy_livez_port }}
-        host: 127.0.0.1
-    readinessProbe:
-      httpGet:
-        path: /livez
-        port: {{ haproxy_livez_port }}
-        host: 127.0.0.1
     volumeMounts:
     - mountPath: /usr/local/etc/haproxy/
       name: etc-haproxy

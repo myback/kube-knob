@@ -13,19 +13,14 @@ defaults
     timeout http-request    5m
     timeout queue           5m
     timeout connect         30s
-    timeout client          5m
+    timeout client          15m
     timeout server          15m
     timeout http-keep-alive 30s
     timeout check           30s
     maxconn                 4000
 
-frontend livez
-  bind 127.0.0.1:{{ haproxy_livez_port }}
-  mode http
-  monitor-uri /livez
-
 frontend kube_api_frontend
-  bind 127.0.0.1:{{ haproxy_frontend_port }}
+  bind {{ haproxy_bind }}
   mode tcp
   option tcplog
   default_backend kube_api_backend
@@ -41,5 +36,5 @@ backend kube_api_backend
   {% endif %}
   http-check expect status 200
   {% for host in groups["k8s-master"] -%}
-  server {{ host }} {{ hostvars[host].ansible_host }}:{{ kube_apiserver_port }} check check-ssl verify none
+  server {{ host }} {{ hostvars[host].ansible_default_ipv4.address }}:{{ kube_apiserver_port }} check check-ssl verify none
   {% endfor -%}

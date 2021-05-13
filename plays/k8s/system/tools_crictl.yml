@@ -5,7 +5,7 @@
     - name: Download crictl
       unarchive:
         src: '{{ crictl_download_url }}'
-        dest: '{{ bin_dir }}'
+        dest: '{{ kube_bin_dir }}'
         owner: root
         group: root
         mode: 0755

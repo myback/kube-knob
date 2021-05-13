@@ -1,0 +1,4 @@
+keepalived_password: '{{ lookup("password", "{{ artifacts_dir }}/keepalieved.creds length=16 chars=hexdigits") }}'
+keepalived_router_id: 10
+keepalived_image_repo: osixia/keepalived
+keepalived_image_tag: 2.0.20

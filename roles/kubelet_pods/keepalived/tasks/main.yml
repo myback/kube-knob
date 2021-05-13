@@ -1,0 +1,7 @@
+- name: Render keepalived static pod manifest
+  template:
+    src: keepalived.yaml.j2
+    dest: '{{ kube_manifest_dir }}/keepalived.yaml'
+    owner: root
+    group: root
+    mode: 0600

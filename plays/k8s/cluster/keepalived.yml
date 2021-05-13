@@ -1,0 +1,18 @@
+#!/usr/bin/env -S ansible-playbook
+- hosts: k8s-master
+  gather_facts: no
+  tasks:
+    - name: Set facts
+      set_fact:
+        keepalived_state: MASTER
+      when:
+        - kube_load_balancer_addr is defined
+        - keepalived_enabled
+        - inventory_hostname == groups["k8s-master"][0]
+
+    - name: Run kubelet_pods/keepalived role
+      include_role:
+        name: kubelet_pods/keepalived
+      when:
+        - kube_load_balancer_addr is defined
+        - keepalived_enabled

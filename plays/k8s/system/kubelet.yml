@@ -21,7 +21,7 @@
     - name: Download kubelet
       get_url:
         url: '{{ kubelet_download_url }}'
-        dest: '{{ bin_dir }}/kubelet'
+        dest: '{{ kube_bin_dir }}/kubelet'
         owner: root
         group: root
         mode: 0755
@@ -47,3 +47,11 @@
         group: root
         mode: 0640
       notify: Restart kubelet
+
+    - name: Ensure the directory {{ kube_manifest_dir }} is exists
+      file:
+        path: '{{ kube_manifest_dir }}'
+        state: directory
+        owner: root
+        group: root
+        mode: 0755

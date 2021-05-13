@@ -95,8 +95,8 @@ oom_score = 0
           base_runtime_spec = ""
           [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
     [plugins."io.containerd.grpc.v1.cri".cni]
-      bin_dir = "{{ cni_bin_dir }}"
-      conf_dir = "{{ cni_conf_dir }}"
+      bin_dir = "{{ kube_cni_bin_dir }}"
+      conf_dir = "{{ kube_cni_conf_dir }}"
       max_conf_num = 1
       conf_template = ""
     [plugins."io.containerd.grpc.v1.cri".registry]
