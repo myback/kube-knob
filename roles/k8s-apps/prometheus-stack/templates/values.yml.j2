@@ -20,39 +20,15 @@ fullnameOverride: ""
 
 ## Labels to apply to all resources
 ##
-commonLabels: {}
+commonLabels: {{ prometheus_stack_labels }}
 # scmhash: abc123
 # myLabel: aakkmd
 
 ## Create default rules for monitoring the cluster
 ##
 defaultRules:
-  create: true
-  rules:
-    alertmanager: true
-    etcd: true
-    general: true
-    k8s: true
-    kubeApiserver: true
-    kubeApiserverAvailability: true
-    kubeApiserverError: true
-    kubeApiserverSlos: true
-    kubelet: true
-    kubePrometheusGeneral: true
-    kubePrometheusNodeAlerting: true
-    kubePrometheusNodeRecording: true
-    kubernetesAbsent: true
-    kubernetesApps: true
-    kubernetesResources: true
-    kubernetesStorage: true
-    kubernetesSystem: true
-    kubeScheduler: true
-    kubeStateMetrics: true
-    network: true
-    node: true
-    prometheus: true
-    prometheusOperator: true
-    time: true
+  create: {{ prometheus_stack_default_rules_create }}
+  rules: {{ prometheus_stack_default_rules }}
 
   ## Runbook url prefix for default rules
   runbookUrl: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#
@@ -79,7 +55,7 @@ defaultRules:
 
 ## Provide custom recording or alerting rules to be deployed into the cluster.
 ##
-additionalPrometheusRulesMap: {}
+additionalPrometheusRulesMap: {{ prometheus_stack_additional_prometheus_rules_map }}
 #  rule-name:
 #    groups:
 #    - name: my_group
@@ -90,9 +66,9 @@ additionalPrometheusRulesMap: {}
 ##
 global:
   rbac:
-    create: true
-    pspEnabled: true
-    pspAnnotations: {}
+    create: {{ prometheus_stack_rbac_create }}
+    pspEnabled: {{ prometheus_stack_psp_enabled }}
+    pspAnnotations: {{ prometheus_stack_psp_annotations }}
       ## Specify pod annotations
       ## Ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#apparmor
       ## Ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#seccomp
@@ -115,7 +91,7 @@ alertmanager:
 
   ## Deploy alertmanager
   ##
-  enabled: true
+  enabled: {{ prometheus_alertmanager_enabled }}
 
   ## Api that prometheus will use to communicate with alertmanager. Possible values are v1, v2
   ##
@@ -125,8 +101,8 @@ alertmanager:
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
   ##
   serviceAccount:
-    create: true
-    name: ""
+    create: {{ prometheus_alertmanager_service_account_create }}
+    name: {{ prometheus_alertmanager_service_account_name }}
     annotations: {}
 
   ## Configure pod disruption budgets for Alertmanager
@@ -135,9 +111,9 @@ alertmanager:
   ## https://github.com/kubernetes/kubernetes/issues/45398
   ##
   podDisruptionBudget:
-    enabled: false
-    minAvailable: 1
-    maxUnavailable: ""
+    enabled: {{ prometheus_alertmanager_pod_disruption_budget_enabled }}
+    minAvailable: {{ prometheus_alertmanager_pod_disruption_budget_min_available }}
+    maxUnavailable: {{ prometheus_alertmanager_pod_disruption_budget_max_unavailable }}
 
   ## Alertmanager configuration directives
   ## ref: https://prometheus.io/docs/alerting/configuration/#configuration-file
@@ -180,7 +156,8 @@ alertmanager:
   ##      https://prometheus.io/docs/alerting/notification_examples/
   ##
   templateFiles: {}
-  #
+  
+  {#
   ## An example template:
   #   template_1.tmpl: |-
   #       {{ define "cluster" }}{{ .ExternalURL | reReplaceAll ".*alertmanager\\.(.*)" "$1" }}{{ end }}
@@ -198,32 +175,33 @@ alertmanager:
   #           {{ end }}
   #       {{ end }}
   #       {{ end }}
+  #}
 
   ingress:
-    enabled: false
+    enabled: {{ prometheus_alertmanager_ingress_enabled }}
 
     # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
     # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
     # ingressClassName: nginx
 
-    annotations: {}
+    annotations: {{ prometheus_alertmanager_ingress_annotations }}
 
     labels: {}
 
     ## Hosts must be provided if Ingress is enabled.
     ##
-    hosts: []
+    hosts: {{ prometheus_alertmanager_ingress_hosts }}
       # - alertmanager.domain.com
 
     ## Paths to use for ingress rules - one path should match the alertmanagerSpec.routePrefix
     ##
-    paths: []
+    paths: {{ prometheus_alertmanager_ingress_paths }}
     # - /
 
     ## TLS configuration for Alertmanager Ingress
     ## Secret must be manually created in the namespace
     ##
-    tls: []
+    tls: {{ prometheus_alertmanager_ingress_tls }}
     # - secretName: alertmanager-general-tls
     #   hosts:
     #   - alertmanager.example.com
@@ -246,9 +224,11 @@ alertmanager:
     annotations: {}
     labels: {}
 
+    {#
     ## Final form of the hostname for each per replica ingress is
     ## {{ ingressPerReplica.hostPrefix }}-{{ $replicaNumber }}.{{ ingressPerReplica.hostDomain }}
     ##
+    #}
     ## Prefix for the per replica ingress that will have `-$replicaNumber`
     ## appended to the end
     hostPrefix: ""
@@ -268,10 +248,12 @@ alertmanager:
     ##
     tlsSecretPerReplica:
       enabled: false
+      prefix: "alertmanager"
+      {#
       ## Final form of the secret for each per replica ingress is
       ## {{ tlsSecretPerReplica.prefix }}-{{ $replicaNumber }}
       ##
-      prefix: "alertmanager"
+      #}
 
   ## Configuration for Alertmanager service
   ##
@@ -375,8 +357,8 @@ alertmanager:
     ## Image of Alertmanager
     ##
     image:
-      repository: quay.io/prometheus/alertmanager
-      tag: v0.21.0
+      repository: {{ prometheus_alertmanager_repository }}
+      tag: {{ prometheus_alertmanager_repository_tag }}
       sha: ""
 
     ## If true then the user will be responsible to provide a secret with alertmanager configuration
@@ -445,17 +427,17 @@ alertmanager:
 
     ## Size is the expected size of the alertmanager cluster. The controller will eventually make the size of the
     ## running cluster equal to the expected size.
-    replicas: 1
+    replicas: {{ prometheus_alertmanager_replicas }}
 
     ## Time duration Alertmanager shall retain data for. Default is '120h', and must match the regular expression
     ## [0-9]+(ms|s|m|h) (milliseconds seconds minutes hours).
     ##
-    retention: 120h
+    retention: {{ prometheus_alertmanager_retention }}
 
     ## Storage is the definition of how storage will be used by the Alertmanager instances.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/user-guides/storage.md
     ##
-    storage: {}
+    storage: {{ prometheus_alertmanager_storage }}
     # volumeClaimTemplate:
     #   spec:
     #     storageClassName: gluster
@@ -464,7 +446,6 @@ alertmanager:
     #       requests:
     #         storage: 50Gi
     #   selector: {}
-
 
     ## 	The external URL the Alertmanager instances will be available under. This is necessary to generate correct URLs. This is necessary if Alertmanager is not served from root of a DNS name.	string	false
     ##
@@ -487,7 +468,7 @@ alertmanager:
     ## Define resources requests and limits for single Pods.
     ## ref: https://kubernetes.io/docs/user-guide/compute-resources/
     ##
-    resources: {}
+    resources: {{ prometheus_alertmanager_resources }}
     # requests:
     #   memory: 400Mi
 
@@ -579,23 +560,23 @@ alertmanager:
 ## Using default values from https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
 ##
 grafana:
-  enabled: true
+  enabled: {{ prometheus_grafana_enabled }}
   namespaceOverride: ""
 
   ## Deploy default dashboards.
   ##
-  defaultDashboardsEnabled: true
+  defaultDashboardsEnabled: {{ prometheus_grafana_default_dashboards_enabled }}
 
-  adminPassword: prom-operator
+  adminPassword: {{ prometheus_grafana_admin_password }}
 
   ingress:
     ## If true, Grafana Ingress will be created
     ##
-    enabled: true
+    enabled: {{ prometheus_grafana_ingress_enabled }}
 
     ## Annotations for Grafana Ingress
     ##
-    annotations: {}
+    annotations: {{ prometheus_grafana_ingress_annotations }}
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
 
@@ -608,32 +589,31 @@ grafana:
     ##
     # hosts:
     #   - grafana.domain.com
-    hosts:
-      - grafana.monitoring.k8s.portal.s
+    hosts: {{ prometheus_grafana_ingress_hosts }}
 
     ## Path for grafana ingress
-    path: /
+    path: {{ prometheus_grafana_ingress_path }}
 
     ## TLS configuration for grafana Ingress
     ## Secret must be manually created in the namespace
     ##
-    tls: []
+    tls: {{ prometheus_grafana_ingress_tls }}
     # - secretName: grafana-general-tls
     #   hosts:
     #   - grafana.example.com
 
   sidecar:
     dashboards:
-      enabled: true
-      label: grafana_dashboard
+      enabled: {{ prometheus_grafana_dashboards_enabled }}
+      label: {{ prometheus_grafana_dashboards_label }}
 
       ## Annotations for Grafana dashboard configmaps
       ##
       annotations: {}
       multicluster: false
     datasources:
-      enabled: true
-      defaultDatasourceEnabled: true
+      enabled: {{ prometheus_grafana_dashboards_datasources_enabled }}
+      defaultDatasourceEnabled: {{ prometheus_grafana_dashboards_datasources_default_enabled }}
 
       # If not defined, will use prometheus.prometheusSpec.scrapeInterval or its default
       # defaultDatasourceScrapeInterval: 15s
@@ -646,8 +626,8 @@ grafana:
       ## this uses headless service `prometheus-operated` which is
       ## created by Prometheus Operator
       ## ref: https://git.io/fjaBS
-      createPrometheusReplicasDatasources: false
-      label: grafana_datasource
+      createPrometheusReplicasDatasources: {{ prometheus_grafana_dashboards_datasources_create_prometheus_replicas_datasources }}
+      label: {{ prometheus_grafana_dashboards_datasources_label }}
 
   extraConfigmapMounts: []
   # - name: certs-configmap
@@ -657,7 +637,8 @@ grafana:
 
   ## Configure additional grafana datasources (passed through tpl)
   ## ref: http://docs.grafana.org/administration/provisioning/#datasources
-  additionalDataSources: []
+  additionalDataSources: {{ prometheus_grafana_additional_data_sources }}
+  {#
   # - name: prometheus-sample
   #   access: proxy
   #   basicAuth: true
@@ -670,6 +651,7 @@ grafana:
   #   type: prometheus
   #   url: https://{{ printf "%s-prometheus.svc" .Release.Name }}:9090
   #   version: 1
+  #}
 
   ## Passed to grafana subchart and used by servicemonitor below
   ##
@@ -858,58 +840,6 @@ kubelet:
     #   replacement: $1
     #   action: replace
 
-## Component scraping the kube controller manager
-##
-kubeControllerManager:
-  enabled: true
-
-  ## If your kube controller manager is not deployed as a pod, specify IPs it can be found on
-  ##
-  endpoints: []
-  # - 10.141.4.22
-  # - 10.141.4.23
-  # - 10.141.4.24
-
-  ## If using kubeControllerManager.endpoints only the port and targetPort are used
-  ##
-  service:
-    port: 10252
-    targetPort: 10252
-    # selector:
-    #   component: kube-controller-manager
-
-  serviceMonitor:
-    ## Scrape interval. If not set, the Prometheus default scrape interval is used.
-    ##
-    interval: ""
-
-    ## Enable scraping kube-controller-manager over https.
-    ## Requires proper certs (not self-signed) and delegated authentication/authorization checks
-    ##
-    https: false
-
-    # Skip TLS certificate validation when scraping
-    insecureSkipVerify: null
-
-    # Name of the server to use when validating TLS certificate
-    serverName: null
-
-    ## 	metric relabel configs to apply to samples before ingestion.
-    ##
-    metricRelabelings: []
-    # - action: keep
-    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
-    #   sourceLabels: [__name__]
-
-    # 	relabel configs to apply to samples before ingestion.
-    ##
-    relabelings: []
-    # - sourceLabels: [__meta_kubernetes_pod_node_name]
-    #   separator: ;
-    #   regex: ^(.*)$
-    #   targetLabel: nodename
-    #   replacement: $1
-    #   action: replace
 
 ## Component scraping coreDns. Use either this or kubeDns
 ##
@@ -942,54 +872,6 @@ coreDns:
     #   replacement: $1
     #   action: replace
 
-## Component scraping kubeDns. Use either this or coreDns
-##
-kubeDns:
-  enabled: false
-  service:
-    dnsmasq:
-      port: 10054
-      targetPort: 10054
-    skydns:
-      port: 10055
-      targetPort: 10055
-    # selector:
-    #   k8s-app: kube-dns
-  serviceMonitor:
-    ## Scrape interval. If not set, the Prometheus default scrape interval is used.
-    ##
-    interval: ""
-
-    ## 	metric relabel configs to apply to samples before ingestion.
-    ##
-    metricRelabelings: []
-    # - action: keep
-    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
-    #   sourceLabels: [__name__]
-
-    # 	relabel configs to apply to samples before ingestion.
-    ##
-    relabelings: []
-    # - sourceLabels: [__meta_kubernetes_pod_node_name]
-    #   separator: ;
-    #   regex: ^(.*)$
-    #   targetLabel: nodename
-    #   replacement: $1
-    #   action: replace
-    dnsmasqMetricRelabelings: []
-    # - action: keep
-    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
-    #   sourceLabels: [__name__]
-
-    # 	relabel configs to apply to samples before ingestion.
-    ##
-    dnsmasqRelabelings: []
-    # - sourceLabels: [__meta_kubernetes_pod_node_name]
-    #   separator: ;
-    #   regex: ^(.*)$
-    #   targetLabel: nodename
-    #   replacement: $1
-    #   action: replace
 
 ## Component scraping etcd
 ##
@@ -1025,10 +907,10 @@ kubeEtcd:
   serviceMonitor:
     ## Scrape interval. If not set, the Prometheus default scrape interval is used.
     ##
-    interval: ""
-    scheme: http
+    # interval: ""
+    scheme: https
     insecureSkipVerify: false
-    serverName: ""
+    # serverName: ""
     caFile: ""
     certFile: ""
     keyFile: ""
@@ -1049,102 +931,6 @@ kubeEtcd:
     #   targetLabel: nodename
     #   replacement: $1
     #   action: replace
-
-
-## Component scraping kube scheduler
-##
-kubeScheduler:
-  enabled: true
-
-  ## If your kube scheduler is not deployed as a pod, specify IPs it can be found on
-  ##
-  endpoints: []
-  # - 10.141.4.22
-  # - 10.141.4.23
-  # - 10.141.4.24
-
-  ## If using kubeScheduler.endpoints only the port and targetPort are used
-  ##
-  service:
-    port: 10251
-    targetPort: 10251
-    # selector:
-    #   component: kube-scheduler
-
-  serviceMonitor:
-    ## Scrape interval. If not set, the Prometheus default scrape interval is used.
-    ##
-    interval: ""
-    ## Enable scraping kube-scheduler over https.
-    ## Requires proper certs (not self-signed) and delegated authentication/authorization checks
-    ##
-    https: false
-
-    ## Skip TLS certificate validation when scraping
-    insecureSkipVerify: null
-
-    ## Name of the server to use when validating TLS certificate
-    serverName: null
-
-    ## 	metric relabel configs to apply to samples before ingestion.
-    ##
-    metricRelabelings: []
-    # - action: keep
-    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
-    #   sourceLabels: [__name__]
-
-    # 	relabel configs to apply to samples before ingestion.
-    ##
-    relabelings: []
-    # - sourceLabels: [__meta_kubernetes_pod_node_name]
-    #   separator: ;
-    #   regex: ^(.*)$
-    #   targetLabel: nodename
-    #   replacement: $1
-    #   action: replace
-
-
-## Component scraping kube proxy
-##
-kubeProxy:
-  enabled: true
-
-  ## If your kube proxy is not deployed as a pod, specify IPs it can be found on
-  ##
-  endpoints: []
-  # - 10.141.4.22
-  # - 10.141.4.23
-  # - 10.141.4.24
-
-  service:
-    port: 10249
-    targetPort: 10249
-    # selector:
-    #   k8s-app: kube-proxy
-
-  serviceMonitor:
-    ## Scrape interval. If not set, the Prometheus default scrape interval is used.
-    ##
-    interval: ""
-
-    ## Enable scraping kube-proxy over https.
-    ## Requires proper certs (not self-signed) and delegated authentication/authorization checks
-    ##
-    https: false
-
-    ## 	metric relabel configs to apply to samples before ingestion.
-    ##
-    metricRelabelings: []
-    # - action: keep
-    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
-    #   sourceLabels: [__name__]
-
-    # 	relabel configs to apply to samples before ingestion.
-    ##
-    relabelings: []
-    # - action: keep
-    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
-    #   sourceLabels: [__name__]
 
 
 ## Component scraping kube state metrics
@@ -1237,14 +1023,14 @@ prometheus-node-exporter:
 ## Manages Prometheus and Alertmanager components
 ##
 prometheusOperator:
-  enabled: true
+  enabled: {{ prometheus_operator_enabled }}
 
   ## Prometheus-Operator v0.39.0 and later support TLS natively.
   ##
   tls:
-    enabled: true
+    enabled: {{ prometheus_operator_tls_enabled }}
     # Value must match version names from https://golang.org/pkg/crypto/tls/#pkg-constants
-    tlsMinVersion: VersionTLS13
+    tlsMinVersion: {{ prometheus_operator_tls_min_version }}
     # The default webhook port is 10250 in order to work out-of-the-box in GKE private clusters and avoid adding firewall rules.
     internalPort: 10250
 
@@ -1252,7 +1038,7 @@ prometheusOperator:
   ## rules from making their way into prometheus and potentially preventing the container from starting
   admissionWebhooks:
     failurePolicy: Fail
-    enabled: true
+    enabled: {{ prometheus_operator_admission_webhooks_enabled }}
     ## A PEM encoded CA bundle which will be used to validate the webhook's server certificate.
     ## If unspecified, system trust roots on the apiserver are used.
     caBundle: ""
@@ -1261,13 +1047,13 @@ prometheusOperator:
     ## certs ahead of time if you wish.
     ##
     patch:
-      enabled: true
+      enabled: {{ prometheus_operator_admission_webhooks_patch_enabled }}
       image:
-        repository: jettech/kube-webhook-certgen
-        tag: v1.5.0
+        repository: {{ prometheus_operator_admission_webhooks_patch_repository }}
+        tag: {{ prometheus_operator_admission_webhooks_patch_repository_tag }}
         sha: ""
         pullPolicy: IfNotPresent
-      resources: {}
+      resources: {{ prometheus_operator_admission_webhooks_patch_resources }}
       ## Provide a priority class name to the webhook patching job
       ##
       priorityClassName: ""
@@ -1310,8 +1096,8 @@ prometheusOperator:
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
   ##
   serviceAccount:
-    create: true
-    name: ""
+    create: {{ prometheus_operator_service_account_create }}
+    name: {{ prometheus_operator_service_account_name }}
 
   ## Configuration for Prometheus operator service
   ##
@@ -1402,7 +1188,7 @@ prometheusOperator:
 
   ## Resource limits & requests
   ##
-  resources: {}
+  resources: {{ prometheus_operator_resources }}
   # limits:
   #   cpu: 200m
   #   memory: 200Mi
@@ -1461,8 +1247,8 @@ prometheusOperator:
   ## Prometheus-operator image
   ##
   image:
-    repository: quay.io/prometheus-operator/prometheus-operator
-    tag: v0.45.0
+    repository: {{ prometheus_operator_repository }}
+    tag: {{ prometheus_operator_repository_tag }}
     sha: ""
     pullPolicy: IfNotPresent
 
@@ -1477,8 +1263,8 @@ prometheusOperator:
   ## Prometheus-config-reloader image to use for config and rule reloading
   ##
   prometheusConfigReloaderImage:
-    repository: quay.io/prometheus-operator/prometheus-config-reloader
-    tag: v0.45.0
+    repository: {{ prometheus_operator_config_reloader_repository }}
+    tag: {{ prometheus_operator_config_reloader_repository_tag }}
     sha: ""
 
   ## Set the prometheus config reloader side-car CPU limit
@@ -1497,7 +1283,7 @@ prometheusOperator:
 ##
 prometheus:
 
-  enabled: true
+  enabled: {{ prometheus_enabled }}
 
   ## Annotations for Prometheus
   ##
@@ -1507,8 +1293,8 @@ prometheus:
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
   ##
   serviceAccount:
-    create: true
-    name: ""
+    create: {{ prometheus_service_account_create }}
+    name: {{ prometheus_service_account_name }}
 
   # Service for thanos service discovery on sidecar
   # Enable this can make Thanos Query can use
@@ -1588,9 +1374,9 @@ prometheus:
   ## https://github.com/kubernetes/kubernetes/issues/45398
   ##
   podDisruptionBudget:
-    enabled: false
-    minAvailable: 1
-    maxUnavailable: ""
+    enabled: {{ prometheus_pod_disruption_budget_enabled }}
+    minAvailable: {{ prometheus_pod_disruption_budget_min_available }}
+    maxUnavailable: {{ prometheus_pod_disruption_budget_max_unavailable }}
 
   # Ingress exposes thanos sidecar outside the cluster
   thanosIngress:
@@ -1628,13 +1414,13 @@ prometheus:
     #   - thanos-gateway.domain.com
 
   ingress:
-    enabled: false
+    enabled: {{ prometheus_ingress_enabled }}
 
     # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
     # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
     # ingressClassName: nginx
 
-    annotations: {}
+    annotations: {{ prometheus_ingress_annotations }}
     labels: {}
 
     ## Hostnames.
@@ -1642,17 +1428,17 @@ prometheus:
     ##
     # hosts:
     #   - prometheus.domain.com
-    hosts: []
+    hosts: {{ prometheus_ingress_hosts }}
 
     ## Paths to use for ingress rules - one path should match the prometheusSpec.routePrefix
     ##
-    paths: []
+    paths: {{ prometheus_ingress_paths }}
     # - /
 
     ## TLS configuration for Prometheus Ingress
     ## Secret must be manually created in the namespace
     ##
-    tls: []
+    tls: {{ prometheus_ingress_tls }}
       # - secretName: prometheus-general-tls
       #   hosts:
       #     - prometheus.example.com
@@ -1670,9 +1456,11 @@ prometheus:
     annotations: {}
     labels: {}
 
+    {#
     ## Final form of the hostname for each per replica ingress is
     ## {{ ingressPerReplica.hostPrefix }}-{{ $replicaNumber }}.{{ ingressPerReplica.hostDomain }}
     ##
+    #}
     ## Prefix for the per replica ingress that will have `-$replicaNumber`
     ## appended to the end
     hostPrefix: ""
@@ -1692,10 +1480,12 @@ prometheus:
     ##
     tlsSecretPerReplica:
       enabled: false
+      prefix: "prometheus"
+      {#
       ## Final form of the secret for each per replica ingress is
       ## {{ tlsSecretPerReplica.prefix }}-{{ $replicaNumber }}
       ##
-      prefix: "prometheus"
+      #}
 
   ## Configure additional options for default pod security policy for Prometheus
   ## ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
@@ -1775,8 +1565,8 @@ prometheus:
     ## Image of Prometheus.
     ##
     image:
-      repository: quay.io/prometheus/prometheus
-      tag: v2.24.0
+      repository: {{ prometheus_repository }}
+      tag: {{ prometheus_repository_tag }}
       sha: ""
 
     ## Tolerations for use with node taints
@@ -1837,7 +1627,7 @@ prometheus:
     ## reflected in the running Pods. To change the secrets mounted into the Prometheus Pods, the object must be deleted and recreated
     ## with the new list of secrets.
     ##
-    secrets: []
+    secrets: {{ prometheus_spec_secrets }}
 
     ## ConfigMaps is a list of ConfigMaps in the same namespace as the Prometheus object, which shall be mounted into the Prometheus Pods.
     ## The ConfigMaps are mounted into /etc/prometheus/configmaps/.
@@ -2034,14 +1824,14 @@ prometheus:
 
     ## Resource limits & requests
     ##
-    resources: {}
+    resources: {{ prometheus_resources }}
     # requests:
     #   memory: 400Mi
 
     ## Prometheus StorageSpec for persistent data
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/user-guides/storage.md
     ##
-    storageSpec: {}
+    storageSpec: {{ prometheus_storage_spec }}
     ## Using PersistentVolumeClaim
     ##
     #  volumeClaimTemplate:
@@ -2059,10 +1849,10 @@ prometheus:
     #    medium: Memory
 
     # Additional volumes on the output StatefulSet definition.
-    volumes: []
+    volumes: {{ prometheus_spec_volumes }}
 
     # Additional VolumeMounts on the output StatefulSet definition.
-    volumeMounts: []
+    volumeMounts: {{ prometheus_spec_volumes_mount }}
 
     ## AdditionalScrapeConfigs allows specifying additional Prometheus scrape configurations. Scrape configurations
     ## are appended to the configurations generated by the Prometheus Operator. Job configurations must have the form
@@ -2075,7 +1865,7 @@ prometheus:
     ## The scrape configuration example below will find master nodes, provided they have the name .*mst.*, relabel the
     ## port to 2379 and allow etcd scraping provided it is running on all Kubernetes master nodes
     ##
-    additionalScrapeConfigs: []
+    additionalScrapeConfigs: {{ prometheus_additional_scrape_configs }}
     # - job_name: kube-etcd
     #   kubernetes_sd_configs:
     #     - role: node
@@ -2349,3 +2139,168 @@ prometheus:
     ## https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#podmetricsendpoint
     ##
     # podMetricsEndpoints: []
+
+
+## TODO: Try to scraping metrics from localhost kubeScheduler and kubeControllerManager
+## Component scraping kube scheduler
+##
+kubeScheduler:
+  enabled: false
+
+  ## If your kube scheduler is not deployed as a pod, specify IPs it can be found on
+  ##
+  endpoints: []
+  # - 10.141.4.22
+  # - 10.141.4.23
+  # - 10.141.4.24
+
+  ## If using kubeScheduler.endpoints only the port and targetPort are used
+  ##
+  service:
+    port: 10251
+    targetPort: 10251
+    # selector:
+    #   component: kube-scheduler
+
+  serviceMonitor:
+    ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+    ##
+    interval: ""
+    ## Enable scraping kube-scheduler over https.
+    ## Requires proper certs (not self-signed) and delegated authentication/authorization checks
+    ##
+    https: false
+
+    ## Skip TLS certificate validation when scraping
+    insecureSkipVerify: null
+
+    ## Name of the server to use when validating TLS certificate
+    serverName: null
+
+    ## 	metric relabel configs to apply to samples before ingestion.
+    ##
+    metricRelabelings: []
+    # - action: keep
+    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
+    #   sourceLabels: [__name__]
+
+    # 	relabel configs to apply to samples before ingestion.
+    ##
+    relabelings: []
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace
+
+
+## Component scraping the kube controller manager
+##
+kubeControllerManager:
+  enabled: false
+
+  ## If your kube controller manager is not deployed as a pod, specify IPs it can be found on
+  ##
+  endpoints: []
+  # - 10.141.4.22
+  # - 10.141.4.23
+  # - 10.141.4.24
+
+  ## If using kubeControllerManager.endpoints only the port and targetPort are used
+  ##
+  service:
+    port: 10252
+    targetPort: 10252
+    # selector:
+    #   component: kube-controller-manager
+
+  serviceMonitor:
+    ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+    ##
+    interval: ""
+
+    ## Enable scraping kube-controller-manager over https.
+    ## Requires proper certs (not self-signed) and delegated authentication/authorization checks
+    ##
+    https: false
+
+    # Skip TLS certificate validation when scraping
+    insecureSkipVerify: null
+
+    # Name of the server to use when validating TLS certificate
+    serverName: null
+
+    ## 	metric relabel configs to apply to samples before ingestion.
+    ##
+    metricRelabelings: []
+    # - action: keep
+    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
+    #   sourceLabels: [__name__]
+
+    # 	relabel configs to apply to samples before ingestion.
+    ##
+    relabelings: []
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace
+
+
+## DO NOT ENABLED
+## Component scraping kube proxy
+##
+kubeProxy:
+  enabled: false
+
+
+## Component scraping kubeDns. Use either this or coreDns
+##
+kubeDns:
+  enabled: false
+  service:
+    dnsmasq:
+      port: 10054
+      targetPort: 10054
+    skydns:
+      port: 10055
+      targetPort: 10055
+    # selector:
+    #   k8s-app: kube-dns
+  serviceMonitor:
+    ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+    ##
+    interval: ""
+
+    ## 	metric relabel configs to apply to samples before ingestion.
+    ##
+    metricRelabelings: []
+    # - action: keep
+    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
+    #   sourceLabels: [__name__]
+
+    # 	relabel configs to apply to samples before ingestion.
+    ##
+    relabelings: []
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace
+    dnsmasqMetricRelabelings: []
+    # - action: keep
+    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
+    #   sourceLabels: [__name__]
+
+    # 	relabel configs to apply to samples before ingestion.
+    ##
+    dnsmasqRelabelings: []
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace

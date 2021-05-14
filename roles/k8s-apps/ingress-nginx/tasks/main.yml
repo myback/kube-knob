@@ -1,5 +1,4 @@
 ---
-# tasks file for ingress-nginx
 - name: Add ingress-nginx chart repo
   community.kubernetes.helm_repository:
     name: ingress-nginx

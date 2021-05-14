@@ -10,11 +10,11 @@ defaults
     option                  http-server-close
     option                  redispatch
     retries                 5
-    timeout http-request    5m
-    timeout queue           5m
+    timeout http-request    300s
+    timeout queue           300s
     timeout connect         30s
-    timeout client          15m
-    timeout server          15m
+    timeout client          86400s
+    timeout server          86400s
     timeout http-keep-alive 30s
     timeout check           30s
     maxconn                 4000

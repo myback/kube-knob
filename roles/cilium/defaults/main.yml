@@ -1,7 +1,3 @@
----
-# defaults file for cilium
-cilium_wait_agent_after_deploy: true
-
 cilium_chart_version: v1.9.6
 cilium_version: v1.9.6
 cilium_hubble_ui_version: v0.7.3

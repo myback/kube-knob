@@ -27,6 +27,7 @@
     group: root
     mode: 0600
 
+# TODO: add patching configMap/cluster-info in kube-public namespace instead 'Render kubelet.conf'
 - name: Render kubelet.conf
   template:
     src: kubelet.conf.j2

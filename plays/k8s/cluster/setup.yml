@@ -1,4 +1,8 @@
 - import_playbook: cluster_init.yml
 - import_playbook: node_join.yml
+
+- import_playbook: ../apps/prom-stack.yml
+  when: prometheus_stack_enabled
+
 - import_playbook: ../apps/ingress-nginx.yml
   when: ingress_nginx_enabled

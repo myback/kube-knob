@@ -51,13 +51,13 @@ controller:
   # Required for use with CNI based kubernetes installations (such as ones set up by kubeadm),
   # since CNI and hostport don't mix yet. Can be deprecated once https://github.com/kubernetes/kubernetes/issues/23920
   # is merged
-  hostNetwork: false
+  hostNetwork: {{ ingress_nginx_host_network }}
 
   ## Use host ports 80 and 443
   ## Disabled by default
   ##
   hostPort:
-    enabled: false
+    enabled: {{ ingress_nginx_host_port_enabled }}
     ports:
       http: 80
       https: 443
@@ -522,8 +522,8 @@ controller:
 
     serviceMonitor:
       enabled: {{ ingress_nginx_metrics_service_monitor_enabled }}
-      additionalLabels: {}
-      namespace: ""
+      additionalLabels: {{ ingress_nginx_metrics_service_monitor_additional_labels }}
+      namespace: {{ ingress_nginx_metrics_service_monitor_namespace }}
       namespaceSelector: {}
       # Default: scrape .Release.Namespace only
       # To scrape all, use the following:
@@ -536,8 +536,8 @@ controller:
 
     prometheusRule:
       enabled: {{ ingress_nginx_metrics_prometheus_rule_enabled }}
-      additionalLabels: {}
-      # namespace: ""
+      additionalLabels: {{ ingress_nginx_metrics_prometheus_rule_additional_labels }}
+      namespace: {{ ingress_nginx_metrics_prometheus_rule_namespace }}
       rules: {{ ingress_nginx_metrics_prometheus_rules }}
         # # These are just examples rules, please adapt them to your needs
         # - alert: NGINXConfigFailed

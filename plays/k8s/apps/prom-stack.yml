@@ -2,4 +2,4 @@
 
 - hosts: workstation
   roles:
-    - name: k8s-apps/ingress-nginx
+    - name: k8s-apps/prometheus-stack

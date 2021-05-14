@@ -4,6 +4,7 @@ ingress_nginx_release_name: ingress-nginx
 ingress_nginx_chart_release_namespace: ingress-nginx
 ingress_nginx_chart_version: 3.23.0
 
+ingress_nginx_host_port_enabled: false
 ingress_nginx_class: nginx
 ingress_nginx_sysctls: {}
 ingress_nginx_kind: Deployment
@@ -19,8 +20,13 @@ ingress_nginx_service_external_IPs: []
 
 ingress_nginx_metrics_enabled: false
 ingress_nginx_metrics_service_monitor_enabled: false
+ingress_nginx_metrics_service_monitor_namespace: '{{ prometheus_stack_namespace | default("") }}'
+ingress_nginx_metrics_service_monitor_additional_labels:
+  release: '{{ prometheus_stack_release_name }}'
 ingress_nginx_metrics_service_monitor_scrape_interval: 30s
 ingress_nginx_metrics_prometheus_rule_enabled: false
+ingress_nginx_metrics_prometheus_rule_namespace: ""
+ingress_nginx_metrics_prometheus_rule_additional_labels: {}
 ingress_nginx_metrics_prometheus_rules: []
 
 ingress_nginx_service_account: true

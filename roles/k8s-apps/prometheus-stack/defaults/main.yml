@@ -1,3 +1,102 @@
-prometheus_stack_namespace: monitoring
+prometheus_stack_labels: {}
+prometheus_stack_rbac_create: true
+prometheus_stack_psp_enabled: true
+prometheus_stack_psp_annotations: {}
 
-prometheus_metrics_retention: 10d
+prometheus_stack_default_rules_create: true
+prometheus_stack_default_rules:
+  alertmanager: true
+  etcd: true
+  general: true
+  k8s: true
+  kubeApiserver: true
+  kubeApiserverAvailability: true
+  kubeApiserverError: true
+  kubeApiserverSlos: true
+  kubelet: true
+  kubePrometheusGeneral: true
+  kubePrometheusNodeAlerting: true
+  kubePrometheusNodeRecording: true
+  kubernetesAbsent: true
+  kubernetesApps: true
+  kubernetesResources: true
+  kubernetesStorage: true
+  kubernetesSystem: true
+  kubeScheduler: true
+  kubeStateMetrics: true
+  network: true
+  node: true
+  prometheus: true
+  prometheusOperator: true
+  time: true
+prometheus_stack_additional_prometheus_rules_map: {}
+
+prometheus_alertmanager_enabled: true
+prometheus_alertmanager_service_account_create: true
+prometheus_alertmanager_service_account_name: ""
+prometheus_alertmanager_ingress_enabled: false
+prometheus_alertmanager_ingress_annotations: {}
+prometheus_alertmanager_ingress_hosts: []
+prometheus_alertmanager_ingress_paths: []
+prometheus_alertmanager_ingress_tls: []
+prometheus_alertmanager_repository: quay.io/prometheus/alertmanager
+prometheus_alertmanager_repository_tag: v0.21.0
+prometheus_alertmanager_replicas: 1
+prometheus_alertmanager_pod_disruption_budget_enabled: false
+prometheus_alertmanager_pod_disruption_budget_min_available: 1
+prometheus_alertmanager_pod_disruption_budget_max_unavailable: ""
+prometheus_alertmanager_retention: 120h
+prometheus_alertmanager_storage: {}
+prometheus_alertmanager_resources: {}
+
+prometheus_grafana_enabled: true
+prometheus_grafana_default_dashboards_enabled: true
+prometheus_grafana_admin_password: prom-operator
+prometheus_grafana_ingress_enabled: true
+prometheus_grafana_ingress_annotations: {}
+prometheus_grafana_ingress_hosts: []
+prometheus_grafana_ingress_path: /
+prometheus_grafana_dashboards_enabled: true
+prometheus_grafana_dashboards_label: grafana_dashboard
+prometheus_grafana_dashboards_datasources_enabled: true
+prometheus_grafana_dashboards_datasources_default_enabled: true
+prometheus_grafana_dashboards_datasources_label: grafana_datasource
+prometheus_grafana_dashboards_datasources_create_prometheus_replicas_datasources: false
+prometheus_grafana_additional_data_sources: []
+
+prometheus_operator_enabled: true
+prometheus_operator_tls_enabled: true
+prometheus_operator_tls_min_version: '{{ kube_tls_min_version | default("VersionTLS12") }}'
+prometheus_operator_admission_webhooks_enabled: true
+prometheus_operator_admission_webhooks_patch_enabled: true
+prometheus_operator_admission_webhooks_patch_repository: jettech/kube-webhook-certgen
+prometheus_operator_admission_webhooks_patch_repository_tag: v1.5.0
+prometheus_operator_admission_webhooks_patch_resources: {}
+prometheus_operator_service_account_create: true
+prometheus_operator_service_account_name: ""
+prometheus_operator_resources: {}
+prometheus_operator_repository: quay.io/prometheus-operator/prometheus-operator
+prometheus_operator_repository_tag: v0.45.0
+prometheus_operator_config_reloader_repository: quay.io/prometheus-operator/prometheus-config-reloader
+prometheus_operator_config_reloader_repository_tag: v0.45.0
+
+prometheus_enabled: true
+prometheus_service_account_create: true
+prometheus_service_account_name: ""
+prometheus_pod_disruption_budget_enabled: false
+prometheus_pod_disruption_budget_min_available: 1
+prometheus_pod_disruption_budget_max_unavailable: ""
+prometheus_ingress_enabled: false
+prometheus_ingress_annotations: {}
+prometheus_ingress_hosts: []
+prometheus_ingress_paths: []
+prometheus_ingress_tls: []
+prometheus_repository: quay.io/prometheus/prometheus
+prometheus_repository_tag: v2.24.0
+prometheus_resources: {}
+prometheus_storage_spec: {}
+prometheus_metrics_retention: 120h
+prometheus_additional_scrape_configs: []
+prometheus_spec_secrets: []
+prometheus_spec_volumes: []
+prometheus_spec_volumes_mount: []
