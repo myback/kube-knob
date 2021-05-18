@@ -1,7 +1,9 @@
 ---
 # defaults file for ingress-nginx
 ingress_nginx_release_name: ingress-nginx
-ingress_nginx_chart_release_namespace: ingress-nginx
+ingress_nginx_chart_repo_name: ingress-nginx
+ingress_nginx_chart_repo_url: https://kubernetes.github.io/ingress-nginx
+ingress_nginx_release_namespace: ingress-nginx
 ingress_nginx_chart_version: 3.23.0
 
 ingress_nginx_host_port_enabled: false

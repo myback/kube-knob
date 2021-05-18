@@ -1,12 +1,12 @@
-- name: Add prometheus-community chart repo
+- name: Add {{ prometheus_stack_chart_repo_name }} chart repo
   community.kubernetes.helm_repository:
-    name: prometheus-community
-    repo_url: https://prometheus-community.github.io/helm-charts
+    name: '{{ prometheus_stack_chart_repo_name }}'
+    repo_url: '{{ prometheus_stack_chart_repo_url }}'
 
 - name: Install {{ prometheus_stack_release_name }} into Kubernetes cluster
   community.kubernetes.helm:
     name: '{{ prometheus_stack_release_name }}'
-    chart_ref: prometheus-community/kube-prometheus-stack
+    chart_ref: '{{ prometheus_stack_chart_repo_name }}/kube-prometheus-stack'
     chart_version: '{{ prometheus_stack_chart_version }}'
     release_namespace: '{{ prometheus_stack_namespace }}'
     create_namespace: yes
@@ -16,9 +16,15 @@
     wait: yes
     wait_timeout: 120s
 
+- name: Render additional dashboards
+  template:
+    src: dashboards.yaml.j2
+    dest: '{{ artifacts_dir }}/dashboards.yaml'
+    mode: 0644
+
 - name: Add Grafana dashboards
   command: >-
     kubectl
     --kubeconfig={{ kubeconfig_path_local }}
     --namespace={{ prometheus_stack_namespace }}
-    apply -f {{ role_path }}/files/grafana-dashboards.yml
+    apply -f {{ artifacts_dir }}/dashboards.yaml

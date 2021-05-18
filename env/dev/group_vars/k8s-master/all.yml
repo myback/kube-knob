@@ -1,3 +1,0 @@
----
-kubelet_cpu_reserved: "500m"
-kubelet_memory_reserved: "512Mi"

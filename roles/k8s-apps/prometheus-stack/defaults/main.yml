@@ -1,3 +1,9 @@
+prometheus_stack_release_name: kube-prom-stack
+prometheus_stack_chart_repo_name: prometheus-community
+prometheus_stack_chart_repo_url: https://prometheus-community.github.io/helm-charts
+prometheus_stack_namespace: monitoring
+prometheus_stack_chart_version: 15.4.6
+
 prometheus_stack_labels: {}
 prometheus_stack_rbac_create: true
 prometheus_stack_psp_enabled: true

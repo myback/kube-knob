@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMapList
+items:
+{% for dashboard in lookup("fileglob", role_path + "/files/dashboards/*.json").split(",") %}
+{% set filename = dashboard | basename %}
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: additional-dashboard-{{ filename.split('.') | first }}
+    labels:
+      {{ prometheus_grafana_dashboards_label }}: "1"
+  data:
+    {{ filename }}: |
+      {{ lookup("file", dashboard) | indent(6) }}
+{% endfor %}
