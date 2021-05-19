@@ -1,11 +1,10 @@
 #!/usr/bin/env -S ansible-playbook
-- import_playbook: '{{ playbook_dir }}/../system/setup.yml'
 - import_playbook: facts.yml
 
 - hosts: k8s-master
   gather_facts: no
   tasks:
-    - name: Init first node of Kubernetes cluster
+    - name: Init first node of a Kubernetes cluster
       block:
         - name: Generate kubeadm token
           set_fact:
@@ -31,7 +30,7 @@
           include_role:
             name: kubelet_pods/haproxy
           vars:
-            haproxy_bind: '0.0.0.0:{{ kube_control_plain_endpoint.split(":")[1] }}'
+            haproxy_bind: '*:{{ kube_control_plain_endpoint.split(":")[1] }}'
           when:
             - kube_load_balancer_addr is defined
             - keepalived_enabled
@@ -44,9 +43,3 @@
             {% if kubeadm_init_phases_skip %} --skip-phases={{ kubeadm_init_phases_skip | join(",") }}{% endif %}
       run_once: yes
       when: not kubelet_already_running
-
-- import_playbook: fetch_kubeconfig.yml
-- import_playbook: psp.yml
-
-- import_playbook: ../cni/cilium.yml
-  when: kube_network_plugin == "cilium"

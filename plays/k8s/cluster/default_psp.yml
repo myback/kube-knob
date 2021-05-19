@@ -7,4 +7,4 @@
       command: >-
         kubectl
         --kubeconfig={{ kubeconfig_path_local }}
-        apply -f files/psp.yaml
+        apply -f files/default_psp.yaml

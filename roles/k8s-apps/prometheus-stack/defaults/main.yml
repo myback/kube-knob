@@ -28,7 +28,7 @@ prometheus_stack_default_rules:
   kubernetesResources: true
   kubernetesStorage: true
   kubernetesSystem: true
-  kubeScheduler: true
+  kubeScheduler: '{% if kube_scheduler_bind_address is defined and kube_scheduler_bind_address != "127.0.0.1" %}true{% else %}false{% endif %}'
   kubeStateMetrics: true
   network: true
   node: true
@@ -106,3 +106,6 @@ prometheus_additional_scrape_configs: []
 prometheus_spec_secrets: []
 prometheus_spec_volumes: []
 prometheus_spec_volumes_mount: []
+
+prometheus_scraping_metrics_kube_scheduler_enabled: '{% if kube_scheduler_bind_address is defined and kube_scheduler_bind_address != "127.0.0.1" %}true{% else %}false{% endif %}'
+prometheus_scraping_metrics_kube_controller_manager: '{% if kube_controller_manager_bind_address is defined and kube_controller_manager_bind_address != "127.0.0.1" %}true{% else %}false{% endif %}'

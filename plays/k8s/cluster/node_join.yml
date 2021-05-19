@@ -1,5 +1,8 @@
 #!/usr/bin/env -S ansible-playbook
 - import_playbook: facts.yml
+
+- import_playbook: '{{ playbook_dir }}/../system/setup.yml'
+  when: cluster_setup is not defined
 - import_playbook: keepalived.yml
 - import_playbook: haproxy.yml
 
@@ -47,4 +50,4 @@
             kubeadm join --config={{ kubeadm_config_path }} --ignore-preflight-errors=DirAvailable--etc-kubernetes-manifests
       when: not kubelet_already_running
 
-- import_playbook: labels.yml
+- import_playbook: node_labels.yml

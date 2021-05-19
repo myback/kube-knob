@@ -2145,7 +2145,7 @@ prometheus:
 ## Component scraping kube scheduler
 ##
 kubeScheduler:
-  enabled: false
+  enabled: {{ prometheus_scraping_metrics_kube_scheduler_enabled }}
 
   ## If your kube scheduler is not deployed as a pod, specify IPs it can be found on
   ##
@@ -2198,7 +2198,7 @@ kubeScheduler:
 ## Component scraping the kube controller manager
 ##
 kubeControllerManager:
-  enabled: false
+  enabled: {{ prometheus_scraping_metrics_kube_controller_manager }}
 
   ## If your kube controller manager is not deployed as a pod, specify IPs it can be found on
   ##

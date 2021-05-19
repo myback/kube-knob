@@ -1,5 +1,5 @@
 #!/usr/bin/env -S ansible-playbook
-- hosts: hosts
+- hosts: k8s
   gather_facts: no
   handlers:
     - name: Restart systemd-timesyncd
@@ -16,4 +16,5 @@
         owner: root
         group: root
         mode: 0644
+      when: ntp_servers is defined and ntp_servers
       notify: Restart systemd-timesyncd

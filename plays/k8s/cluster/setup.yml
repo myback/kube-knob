@@ -1,4 +1,17 @@
+- import_playbook: '{{ playbook_dir }}/../system/setup.yml'
+
+- hosts: k8s
+  tasks:
+    - name: Setup cluster
+      set_fact:
+        cluster_setup: true
+
 - import_playbook: cluster_init.yml
+- import_playbook: fetch_kubeconfig.yml
+- import_playbook: default_psp.yml
+- import_playbook: ../cni/cilium.yml
+  when: kube_network_plugin == "cilium"
+
 - import_playbook: node_join.yml
 
 - import_playbook: ../apps/prom-stack.yml

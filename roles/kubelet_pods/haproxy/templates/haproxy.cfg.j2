@@ -19,6 +19,16 @@ defaults
     timeout check           30s
     maxconn                 4000
 
+{% if haproxy_metrics_enabled %}
+frontend stats
+   bind *:{{ haproxy_metrics_port }}
+   option http-use-htx
+   http-request use-service prometheus-exporter if { path /metrics }
+   stats enable
+   stats uri /stats
+   stats refresh 10s
+{% endif %}
+
 frontend kube_api_frontend
   bind {{ haproxy_bind }}
   mode tcp
@@ -29,11 +39,7 @@ backend kube_api_backend
   mode tcp
   balance leastconn
   default-server inter 15s downinter 15s rise 2 fall 2 slowstart 60s maxconn 1000 maxqueue 256 weight 100
-  {% if kube_apiserver_anonymous_auth_disable %}
-  option httpchk GET /livez HTTP/1.1\r\nAuthorization:\ Bearer\ {{ sa_token }}
-  {% else %}
   option httpchk GET /livez
-  {% endif %}
   http-check expect status 200
   {% for host in groups["k8s-master"] -%}
   server {{ host }} {{ hostvars[host].ansible_default_ipv4.address }}:{{ kube_apiserver_port }} check check-ssl verify none

@@ -5,12 +5,12 @@ nodeStatusUpdateFrequency: 10s
 address: {{ kubelet_bind_address | default("0.0.0.0") }}
 failSwapOn: true
 cgroupDriver: cgroupfs
-maxPods: {{ kube_node_max_pods | default(110) }}
+maxPods: {{ kubelet_node_max_pods | default(110) }}
 kubeletCgroups: /systemd/system.slice
 staticPodPath: {{ kube_manifest_dir }}
 clusterDomain: {{ kube_cluster_dns_domain }}
 clusterDNS:
-- {{ kube_cluster_dns_ip }}
+- {{ kube_network_service_subnet | ipaddr("net") | ipaddr(10) | ipaddr("address") }}
 {% if system_reserved is defined %}
 systemReserved:
   cpu: {{ kubelet_cpu_reserved | default("250m") }}

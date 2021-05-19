@@ -1,5 +1,5 @@
-# WIP: Kubernetes with Cilium
-Ansible playbook set for deploying a Kubernetes cluster.
+# WIP: Kubernetes deployment
+Ansible playbooks set for deploying a Kubernetes cluster.
 ### Usage
 ```
 python3 -m venv .venv

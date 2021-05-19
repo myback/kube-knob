@@ -8,7 +8,7 @@
       include_role:
         name: kubelet_pods/haproxy
       vars:
-        haproxy_bind: '0.0.0.0:{{ kube_control_plain_endpoint.split(":")[1] }}'
+        haproxy_bind: '*:{{ kube_control_plain_endpoint.split(":")[1] }}'
       when:
         - keepalived_enabled
         - kube_load_balancer_addr is defined
