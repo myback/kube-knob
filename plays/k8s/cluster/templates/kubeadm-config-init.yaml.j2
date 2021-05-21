@@ -38,10 +38,14 @@ etcd:
     serverCertSANs:
 {% for host in groups["k8s-master"] %}
       - {{ hostvars[host].ansible_default_ipv4.address }}
+      - {{ hostvars[host].inventory_hostname_short }}
+      - {{ hostvars[host].inventory_hostname }}
 {% endfor %}
     peerCertSANs:
 {% for host in groups["k8s-master"] %}
       - {{ hostvars[host].ansible_default_ipv4.address }}
+      - {{ hostvars[host].inventory_hostname_short }}
+      - {{ hostvars[host].inventory_hostname }}
 {% endfor %}
 apiServer:
   extraArgs:
