@@ -9,7 +9,6 @@
         - name: Generate kubeadm token
           set_fact:
             kubeadm_token: '{{ lookup("password", "/dev/null chars=ascii_lowercase,digits length=6") }}.{{ lookup("password", "/dev/null chars=ascii_lowercase,digits length=16") }}'
-            keepalived_state: MASTER
 
         - name: Render init kubeadm config
           template:
@@ -22,6 +21,8 @@
         - name: Run kubelet_pods/keepalived role
           include_role:
             name: kubelet_pods/keepalived
+          vars:
+            keepalived_state: MASTER
           when:
             - kube_load_balancer_addr is defined
             - keepalived_enabled
