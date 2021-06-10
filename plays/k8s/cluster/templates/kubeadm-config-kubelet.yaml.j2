@@ -4,7 +4,7 @@ kind: KubeletConfiguration
 nodeStatusUpdateFrequency: 10s
 address: {{ kubelet_bind_address | default("0.0.0.0") }}
 failSwapOn: true
-cgroupDriver: cgroupfs
+cgroupDriver: systemd
 maxPods: {{ kubelet_node_max_pods | default(110) }}
 kubeletCgroups: /systemd/system.slice
 staticPodPath: {{ kube_manifest_dir }}

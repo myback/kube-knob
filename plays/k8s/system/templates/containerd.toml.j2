@@ -56,7 +56,6 @@ oom_score = 0
     selinux_category_range = 1024
     sandbox_image = "k8s.gcr.io/pause:3.2"
     stats_collect_period = 10
-    systemd_cgroup = false
     enable_tls_streaming = false
     max_container_log_line_size = 16384
     disable_cgroup = false
@@ -123,6 +122,7 @@ oom_score = 0
   [plugins."io.containerd.monitor.v1.cgroups"]
     no_prometheus = false
   [plugins."io.containerd.runtime.v1.linux"]
+    systemd_cgroup = true
     shim = "containerd-shim"
     runtime = "runc"
     runtime_root = ""
